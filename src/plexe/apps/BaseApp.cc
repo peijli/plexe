@@ -118,6 +118,8 @@ void BaseApp::logVehicleData(bool crashed)
         scheduleAt(simTime() + SimTime(1, SIMTIME_MS), stopSimulation);
     }
     // write data to output files
+    LOG << "[TEST] distance: " << distance << " relSpeed: " << relSpeed << std::endl;
+    LOG << "[TEST] acceleration: " << data.acceleration << " u: " << data.u << " speed: " << data.speed << " posx: " << data.positionX << " posy: " << data.positionY << std::endl;
     distanceOut.record(distance);
     relSpeedOut.record(relSpeed);
     nodeIdOut.record(myId);

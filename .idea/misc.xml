@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MakefileSettings">
+    <option name="linkedExternalProjectsSettings">
+      <MakefileProjectSettings>
+        <option name="buildOptions" value="-j 20" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/src" />
+        <option name="switches" value="PATH=$PATH:/d/cee_490_sim/sumo-1.12/bin:/d/cee_490_sim/veins-5.2/bin:/d/cee_490_sim/plexe-3.1/bin:/d/cee_490_sim/R-4.3.2/bin:/d/cee_490_sim/omnetpp-5.6.2" />
+        <option name="version" value="2" />
+      </MakefileProjectSettings>
+    </option>
+  </component>
+  <component name="MakefileWorkspace" PROJECT_DIR="$PROJECT_DIR$/src">
+    <contentRoot DIR="$PROJECT_DIR$" />
+  </component>
+</project>

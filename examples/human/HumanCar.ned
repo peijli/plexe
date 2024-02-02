@@ -33,6 +33,7 @@ module HumanCar
     submodules:
 
 
+        // define the protocol
         prot: HumanInterferingProtocol {
             parameters:
                 @display("p=60,200");

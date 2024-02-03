@@ -1,5 +1,15 @@
 #include "plexe/apps/Example7App.h"
+#include "plexe/scenarios/BaseScenario.h"
+#include "veins/modules/messages/BaseFrame1609_4_m.h"
+#include "veins/base/messages/MacPkt_m.h"
+#include "veins/modules/mac/ieee80211p/Mac1609_4.h"
+#include "veins/base/utils/FindModule.h"
+#include "plexe/messages/PlexeInterfaceControlInfo_m.h"
+#include "plexe/driver/PlexeRadioDriverInterface.h"
+#include "plexe/scenarios/BaseScenario.h"
 Define_Module(Example7App);
+
+using namespace veins;
 
 
 /**
@@ -11,14 +21,15 @@ void Example7App::initialize(int stage) {
     if (stage == 1) {
         // connect to the MAC layer
         protocol->registerApplication(
-            MANEUVER_TYPE, 
-            gate("lowerLayerIn"), 
+            MANEUVER_TYPE,
+            gate("lowerLayerIn"),
             gate("lowerLayerOut"),
             gate("lowerControlIn"),
             gate("lowerControlOut"));
         // register to the signal indicating failed unicast transmissions
-        findHost()->subscribe(Mac1609_4::sigRetriesExceeded, this);
-        scenario = FindModule<BaseScenario*>::findSubModule(getParentModule());
+        findHost()->subscribe(veins::Mac1609_4::sigRetriesExceeded, this);
+        scenario = veins::FindModule<BaseScenario*>::findSubModule(getParentModule());
+    }
 }
 
 void Example7App::sendAbandonMessage() {
@@ -47,21 +58,21 @@ void Example7App::sendUnicast(cPacket* msg, int destination) {
     Enter_Method_Silent();
     take(msg);
     // encapsulate the message in a BaseFrame1609_4 and send it to the MAC layer
-    BaseFrame1609_4* frame = new BaseFrame1609_4(
+    veins::BaseFrame1609_4* frame = new veins::BaseFrame1609_4(
         "BaseFrame1609_4", msg->getKind());
     frame->setRecipientAddress(destination);
     // prepare the frequency channel for the message
-    frame->setChannelNumber(static_cast<int>(Channel::CCH));
+    frame->setChannelNumber(static_cast<int>(Channel::cch));
     frame->encapsulate(msg);
     PlexeInterfaceControlInfo* controlInfo = new PlexeInterfaceControlInfo();
-    controlInfo->setInterfaceId(PlexeRadioInterfaces::VEINS_11P);
+    controlInfo->setInterfaces(plexe::PlexeRadioInterfaces::VEINS_11P);
     frame->setControlInfo(controlInfo);
     // push the frame down to the MAC layer
     sendDown(frame);
 }
 
 void Example7App::handleLowerMsg(cMessage* msg) {
-    BaseFrame1609_4* frame = check_and_cast<BaseFrame1609_4*>(msg);
+    veins::BaseFrame1609_4* frame = check_and_cast<veins::BaseFrame1609_4*>(msg);
     cPacket* enc = frame->getEncapsulatedPacket();
     ASSERT2(enc, "received a BaseFrame1609_4s with nothing inside");
 
@@ -72,8 +83,8 @@ void Example7App::handleLowerMsg(cMessage* msg) {
         if (AbandonPlatoon* msg = dynamic_cast<AbandonPlatoon*>(mm)) {
             handleAbandonPlatoon(msg);
             delete msg;
-        } else if (NewFormation* msg = dynamic_cast<NewFormation*>(mm)) {
-            handleNewFormation(msg);
+        } else if (UpdatePlatoonFormation* msg = dynamic_cast<UpdatePlatoonFormation*>(mm)) {
+            handleUpdatePlatoonFormation(msg);
             delete msg;
         }
         delete frame;
@@ -118,22 +129,23 @@ void Example7App::handleAbandonMessage(AbandonPlatoon* msg) {
     getSimulation()->getActiveEnvir()->alert(text);
 
     // Informing the rest of the platoon about the new formation
-    sendNewFormationMessage(formation);
+    sendUpdatePlatoonFormationMessage(formation);
 }
 
-void Example7App::sendNewFormationMessage(const std::vector<int>& newPlatoonFormation) {
-    NewFormation* newFormationMessage = createNewFormationMessage(newPlatoonFormation);
+void Example7App::sendUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation) {
+    UpdatePlatoonFormation* newFormationMessage = createUpdatePlatoonFormationMessage(newPlatoonFormation);
+    int dest;
     for (int i = 0; i < newPlatoonFormation.size(); i++) {
         dest = newPlatoonFormation[i];
-        NewFormation* newFormationMessage = newFormationMessage->dup();
+        UpdatePlatoonFormation* newFormationMessage = newFormationMessage->dup();
         newFormationMessage->setDestinationId(dest);
         sendUnicast(newFormationMessage, dest);
     }
     delete newFormationMessage;
 }
 
-NewFormation* Example7App::createNewFormationMessage(const std::vector<int>& newPlatoonFormation) {
-    NewFormation* newFormationMessage = new NewFormation();
+UpdatePlatoonFormation* Example7App::createUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation) {
+    UpdatePlatoonFormation* newFormationMessage = new UpdatePlatoonFormation();
     newFormationMessage->setPlatoonId(platoonId);
     newFormationMessage->setFormationArraySize(newPlatoonFormation.size());
     for (int i = 0; i < newPlatoonFormation.size(); i++) {
@@ -142,7 +154,7 @@ NewFormation* Example7App::createNewFormationMessage(const std::vector<int>& new
     return newFormationMessage;
 }
 
-void Example7App::handleNewFormationMessage(NewFormation* msg) {
+void Example7App::handleUpdatePlatoonFormationMessage(UpdatePlatoonFormation* msg) {
     std::vector<int> newFormation;
     // retrieve the new formation from the message
     for (int i = 0; i < msg->getFormationArraySize(); i++) {
@@ -162,6 +174,6 @@ void Example7App::handleNewFormationMessage(NewFormation* msg) {
     sprintf(text, "LEADER[%d]: Received new formation<%s> from v<%d>\n", positionHelper->getId(), formationString.c_str(), msg->getVehicleId());
     // sprintf(text, "v<%d> got newFormation = %s\n", positionHelper->getId(), formationString.c_str());
     getSimulation()->getActiveEnvir()->alert(text);
-    
+
 }
 

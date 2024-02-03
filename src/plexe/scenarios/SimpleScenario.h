@@ -23,6 +23,7 @@
 
 #include "plexe/scenarios/BaseScenario.h"
 #include "plexe/apps/BaseApp.h"
+#include "plexe/apps/Example7App.h"
 
 namespace plexe {
 
@@ -31,13 +32,14 @@ public:
     virtual void initialize(int stage);
     virtual void handleMessage(cMessage* msg);
     // destructor
-    virtual ~SimpleScenario() {}
+    virtual ~SimpleScenario();
 
 protected:
     // leader average speed
     double leaderSpeed;
     // application layer, used to stop the simulation
-    BaseApp* appl;
+    // BaseApp* appl;
+    Example7App* appl;
     cMessage *startBraking;
     cMessage *checkDistance;
 

@@ -1,9 +1,10 @@
 #include "plexe/apps/BaseApp.h"
 #include "plexe/scenarios/BaseScenario.h"
 #include "plexe/messages/AbandonMessage_m.h"
+#include "plexe/messages/UpdatePlatoonFormation_m.h"
 #include "plexe/CC_Const.h"
 
-class Example7App: public plexe::BaseApp {
+class Example7App : public plexe::BaseApp {
 
 public:
     void sendAbandonMessage();
@@ -16,8 +17,8 @@ protected:
 
 private:
     AbandonPlatoon* createAbandonMessage();
-    NewFormation* createNewFormationMessage(const std::vector<int>& newPlatoonFormation);
+    UpdatePlatoonFormation* createUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation);
     void handleAbandoonMessage(AbandonPlatoon* msg);
-    void handleNewFormationMessage(NewFormation* msg);
-    void sendNewFormationMessage(const std::vector<int>& newPlatoonFormation);
+    void handleUpdatePlatoonFormationMessage(UpdatePlatoonFormation* msg);
+    void sendUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation);
 };

@@ -36,19 +36,67 @@ void SimpleScenario::initialize(int stage)
         appl = FindModule<BaseApp*>::findSubModule(getParentModule());
 
     if (stage == 2) {
-        // average speed
+        // average speed, convert from km/h to m/s
         leaderSpeed = par("leaderSpeed").doubleValue() / 3.6;
 
         if (positionHelper->isLeader()) {
-            // set base cruising speed
+            // set base cruising speed for the leader
             plexeTraciVehicle->setCruiseControlDesiredSpeed(leaderSpeed);
         }
         else {
             // let the follower set a higher desired speed to stay connected
             // to the leader when it is accelerating
             plexeTraciVehicle->setCruiseControlDesiredSpeed(leaderSpeed + 10);
+
+            // get the platoon formation as a vector
+            std::vector<int> formation = positionHelper->getPlatoonFormation();
+            // if we are the last vehicle in the platoon...
+            if (positionHelper->getId() == formation[formation.size() - 1]) {
+                // generate new console messages
+                startBraking = new cMessage("startBraking");
+                checkDistance = new cMessage("checkDistance");
+                // schedule brake operation
+                scheduleAt(10, startBraking);
+            }
         }
     }
 }
 
+void SimpleScenario::handleMessage(cMessage* msg)
+{
+    if (msg == startBraking) {
+        // Increase CACC Constant Spacing to 15m
+        plexeTraciVehicle->setCACCConstantSpacing(15);
+        // change the color of the traci vehicle
+        traciVehicle->setColor(TraCIColor(100,100,100,255));
+        // start checking distance
+        scheduleAt(simTime() + 0.1, checkDistance);
+    } else if (msg == checkDistance) {
+        // initialize distance and relative speed to the vehicle in front
+        double distance, relativeSpeed;
+        plexeTraciVehicle->getRadarMeasurements(distance, relativeSpeed);
+        LOG << "Distance to the vehicle in front: " << distance << "m" << endl;
+        LOG << "Relative speed to the vehicle in front: " << relativeSpeed << "m/s" << endl;
+
+        // if the distance is greater than 14.9m, switch to ACC
+        if (distance > 14.9) {
+            plexeTraciVehicle->setActiveController(ACC);
+            plexeTraciVehicle->setACCHeadwayTime(1.5);
+            traciVehicle->setColor(TraCIColor(255,0,0,255));
+            LOG << "Switching to ACC" << endl;
+            // send abandon message to the leader
+            appl->sendAbandonMessage();
+        } else {
+            // check again in 0.1s
+            scheduleAt(simTime() + 0.1, checkDistance);
+        }
+    }
+}
+
+// define destructor
+SimpleScenario::~SimpleScenario()
+{
+    cancelAndDelete(startBraking);
+    cancelAndDelete(checkDistance);
+}
 } // namespace plexe

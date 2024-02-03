@@ -19,6 +19,7 @@
 //
 
 #include "plexe/scenarios/SimpleScenario.h"
+#include "plexe/apps/Example7App.h"
 
 using namespace veins;
 
@@ -33,7 +34,7 @@ void SimpleScenario::initialize(int stage)
 
     if (stage == 0)
         // get pointer to application
-        appl = FindModule<BaseApp*>::findSubModule(getParentModule());
+        appl = FindModule<Example7App*>::findSubModule(getParentModule());
 
     if (stage == 2) {
         // average speed, convert from km/h to m/s

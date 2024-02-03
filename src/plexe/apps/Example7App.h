@@ -18,7 +18,7 @@ protected:
 private:
     AbandonPlatoon* createAbandonMessage();
     UpdatePlatoonFormation* createUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation);
-    void handleAbandoonMessage(AbandonPlatoon* msg);
+    void handleAbandonMessage(AbandonPlatoon* msg);
     void handleUpdatePlatoonFormationMessage(UpdatePlatoonFormation* msg);
     void sendUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation);
 };

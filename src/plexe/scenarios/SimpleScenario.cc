@@ -19,7 +19,7 @@
 //
 
 #include "plexe/scenarios/SimpleScenario.h"
-#include "plexe/apps/Example7App.h"
+// #include "plexe/apps/Example7App.h"
 
 using namespace veins;
 

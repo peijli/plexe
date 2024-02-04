@@ -29,10 +29,9 @@ to some incredibly valuable contributors:
 
 ## Check out code
 
-1. driver/PlexeRadioDriverInterface.cc
-2. Different maneuvers and their data requests
-3. messages/PlatooningBeacon
-4. plexe/mobility/CommandInterface -- Remember how to work with plexeTraciVehicle
+1. Different maneuvers and their data requests
+2. messages/PlatooningBeacon
+3. plexe/mobility/CommandInterface -- Remember how to work with plexeTraciVehicle
 
 ## Files and modules I should modify
 

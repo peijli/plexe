@@ -11,6 +11,7 @@
 * TODO LIST
 * - [ ] Try to send and receive an encrypted message
 * - [ ] Try to share encrypted vehicle status data with platoon members
+* - [ ] Try to re-implement PlatooningBeacon
 */
 
 using namespace veins;

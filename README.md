@@ -42,3 +42,4 @@ to some incredibly valuable contributors:
    - Extend BaseProtocol or SimplePlatooningBeaconing classes to handle message encryption and decryption
 2. Extend the GeneralPlatooningApp to handle the new message types
 3. Maybe implement some of your encryption/decryption code in the utilities folder
+

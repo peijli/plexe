@@ -27,13 +27,6 @@ to some incredibly valuable contributors:
 - Max Schettler
 - Christoph Sommer
 
-## TODO LIST FOR FEB 3
-
-1. Go through Plexe module documentation http://plexe.car2x.org/documentation/
-2. Go through Plexe car tutorial http://plexe.car2x.org/tutorial/example5/
-3. Work on modifying the basic protocol
-4. Think about how to demonstrate work on Tuesday
-
 ## Check out code
 
 1. driver/PlexeRadioDriverInterface.cc

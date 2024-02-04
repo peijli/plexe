@@ -38,3 +38,4 @@ subprojects/**/examples/**/valgrind.out
 
 **/.RData
 **/.Rhistory
+.idea/

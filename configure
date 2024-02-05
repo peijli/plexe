@@ -37,8 +37,20 @@ veins = Library(name="Veins", library="veins", default_path="../veins",
                 versions=["5.1", "5.2"], source_folder="src/veins", lib_folder="src",
                 images_folder="images", version_script="print-veins-version")
 
+# cryptopp = Library(
+#     name="Crypto++",
+#     library="cryptopp",
+#     default_path="../cryptopp/",
+#     source_folder="../cryptopp/",
+#     lib_folder="/usr/local/lib/",
+#     images_folder=".",
+#     versions=["8.9"],
+#     version_script="print-cryptopp-version",
+# )
+
 libraries = LibraryChecker()
 libraries.add_lib(veins)
+# libraries.add_lib(cryptopp)
 
 # Start with default flags
 makemake_flags = ["-f", "--deep", "--no-deep-includes", "--make-so", "-I", ".", "-o", "plexe", "-O", "out", "-p", "PLEXE"]

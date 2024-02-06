@@ -30,9 +30,10 @@ namespace plexe {
 class SecuredScenario : public BaseScenario {
 public:
     virtual void initialize(int stage);
+    virtual void finish();
     virtual void handleMessage(cMessage* msg);
     // destructor
-    virtual ~SecuredScenario();
+    // virtual ~SecuredScenario();
 
 protected:
     // leader average speed

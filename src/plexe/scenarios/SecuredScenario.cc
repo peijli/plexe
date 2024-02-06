@@ -19,7 +19,6 @@
 //
 
 #include "plexe/scenarios/SecuredScenario.h"
-// #include "plexe/apps/Example7App.h"
 
 using namespace veins;
 
@@ -34,11 +33,7 @@ namespace plexe {
         if (stage == 0){
             // get pointer to application
             appl = FindModule<SecurePlatooningApp*>::findSubModule(getParentModule());
-            // getSimulation()->getEnvir()->alert("SecuredScenario::initialize: stage 0");
-        // } else if (stage == 1) {
-        //     getSimulation()->getEnvir()->alert("SecuredScenario::initialize: stage 1");
         } else if (stage == 2) {
-            // getSimulation()->getEnvir()->alert("SecuredScenario::initialize: stage 2");
             // average speed, convert from km/h to m/s
             leaderSpeed = par("leaderSpeed").doubleValue() / 3.6;
             // get the platoon formation as a vector
@@ -48,8 +43,8 @@ namespace plexe {
                 plexeTraciVehicle->setCruiseControlDesiredSpeed(leaderSpeed);
                 // send out an encrypted message to the follower
                 encryptedCMessage = new cMessage("encryptedCMessage");
-                scheduleAt(simTime() + 20, encryptedCMessage);
-                getSimulation()->getEnvir()->alert("Scheduled an encrypted message to be sent out");
+                scheduleAt(simTime() + 5, encryptedCMessage);
+                LOG << "Scheduled an encrypted message to be sent out at " << simTime() + 5 << "s" << std::endl;
             } else {
                 // let the follower set a higher desired speed to stay connected
                 // to the leader when it is accelerating
@@ -61,9 +56,7 @@ namespace plexe {
     void SecuredScenario::handleMessage(cMessage* msg) {
         getSimulation()->getEnvir()->alert("SecuredScenario::handleMessage: received a message");
         if (msg == encryptedCMessage) {
-            getSimulation()->getEnvir()->alert("SecuredScenario::handleMessage: sending out an encrypted message");
-            // send out an encrypted message to the last vehicle
-            // appl->sendEncryptedMessage(formation[formation.size() - 1]);
+            LOG << "Sending an encrypted message to the last vehicle" << std::endl;
             // formulate the message that contains some information about the sender vehicle
             // get the platoon formation as a vector
             std::vector<int> formation = positionHelper->getPlatoonFormation();
@@ -75,7 +68,7 @@ namespace plexe {
     // define destructor
     SecuredScenario::~SecuredScenario() {
         cancelAndDelete(encryptedCMessage);
-        appl->deleteModule();
+        appl->deleteModule(); // THIS IS WHAT I WAS MISSING!
     }
     //void SecuredScenario::finish() {
     //    cancelAndDelete(encryptedCMessage);

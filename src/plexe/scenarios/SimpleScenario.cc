@@ -52,13 +52,14 @@ void SimpleScenario::initialize(int stage)
             // get the platoon formation as a vector
             std::vector<int> formation = positionHelper->getPlatoonFormation();
             // if we are the last vehicle in the platoon...
-            if (positionHelper->getId() == formation[formation.size() - 1]) {
-                // generate new console messages
-                startBraking = new cMessage("startBraking");
-                checkDistance = new cMessage("checkDistance");
-                // schedule brake operation
-                scheduleAt(10, startBraking);
-            }
+            // Code for Example 7 only
+            // if (positionHelper->getId() == formation[formation.size() - 1]) {
+            //     // generate new console messages
+            //     startBraking = new cMessage("startBraking");
+            //     checkDistance = new cMessage("checkDistance");
+            //     // schedule brake operation
+            //     scheduleAt(10, startBraking);
+            // }
         }
     }
 }

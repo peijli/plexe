@@ -6,7 +6,12 @@
 
 namespace plexe {
     class SecurePlatooningApp : public plexe::BaseApp {
+    std::string symmetricKey;
     public:
+    //virtual ~SecurePlatooningApp()
+    //{
+    //    delete symmetricKey;
+    //}
         virtual void sendUnicast(cPacket* msg, int destination);
         void sendSecuredMessage(std::string message, int destination);
     protected:
@@ -14,7 +19,6 @@ namespace plexe {
         virtual void handleLowerMsg(cMessage* msg) override;
         plexe::BaseScenario* scenario;
     private:
-        std::string symmetricKey;
         SecureManeuverMessage* createSecureManeuverMessage(std::string message, std::string algorithm);
         std::string handleSecureManeuverMessage(SecureManeuverMessage* msg);
         // std::string toString();

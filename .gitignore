@@ -39,6 +39,7 @@ subprojects/**/examples/**/valgrind.out
 **/.RData
 **/.Rhistory
 .idea/
+.vs/
 src/cryptopp/
 
 # Prerequisites

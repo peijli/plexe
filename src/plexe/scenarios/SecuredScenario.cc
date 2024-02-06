@@ -73,11 +73,12 @@ namespace plexe {
     }
 
     // define destructor
-    // SecuredScenario::~SecuredScenario() {
-    //     cancelAndDelete(encryptedCMessage);
-    // }
-    void SecuredScenario::finish() {
+    SecuredScenario::~SecuredScenario() {
         cancelAndDelete(encryptedCMessage);
+        appl->deleteModule();
     }
+    //void SecuredScenario::finish() {
+    //    cancelAndDelete(encryptedCMessage);
+    //}
  
 } // namespace plexe

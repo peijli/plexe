@@ -7,12 +7,12 @@
 #include "plexe/messages/PlexeInterfaceControlInfo_m.h"
 #include "plexe/driver/PlexeRadioDriverInterface.h"
 #include "plexe/utilities/CryptoHelper.h"
+#include <cassert>
 
 /*
 * TODO LIST
-* - [ ] Try to send and receive an encrypted message
-* - [ ] Try to share encrypted vehicle status data with platoon members
-* - [ ] Try to re-implement PlatooningBeacon
+* - [x] Implementing sending encrypted messages
+* - [x] Implementing receiving and decrypting encrypted messages
 */
 
 using namespace veins;
@@ -22,20 +22,49 @@ namespace plexe {
 
     void SecurePlatooningApp::initialize(int stage){
         BaseApp::initialize(stage);
-        if (stage != 0) {
-            // output to console the name of this app and the vehicle it is attached to
-            auto platoonId = positionHelper->getPlatoonId();
-            auto vehicleId = positionHelper->getId();
-            auto externalId = positionHelper->getExternalId();
-            // auto platoonFormation = positionHelper->getPlatoonFormation();
-            std::string msg = "SecurePlatooningApp::initialize: " + std::to_string(vehicleId) + " in platoon " + std::to_string(platoonId) + " with external ID " + externalId + " and stage " + std::to_string(stage);
-            getSimulation()->getEnvir()->alert(msg.c_str());
+        if (stage == 0) {
+            // generate encryption key
+            symmetricKey = CryptoHelper::generateSymmetricKey();
+            // quick sanity check with how encryption works
+            // std::string plaintext = "Hello, world!";
+            // std::string ciphertext = CryptoHelper::symmetricEncrypt(plaintext, symmetricKey);
+            // std::string decrypted = CryptoHelper::symmetricDecrypt(ciphertext, symmetricKey);
+            // assert(plaintext == decrypted);
+            // std::string msg = "SecurePlatooningApp::initialize: symmetric key " + symmetricKey;
+            // getSimulation()->getEnvir()->alert(msg.c_str());
         }
+    //     if (stage != 0) {
+    //         // output to console the name of this app and the vehicle it is attached to
+    //         auto platoonId = positionHelper->getPlatoonId();
+    //         auto vehicleId = positionHelper->getId();
+    //         auto externalId = positionHelper->getExternalId();
+    //         // auto platoonFormation = positionHelper->getPlatoonFormation();
+    //         std::string msg = "SecurePlatooningApp::initialize: " + std::to_string(vehicleId) + " in platoon " + std::to_string(platoonId) + " with external ID " + externalId + " and stage " + std::to_string(stage);
+    //         getSimulation()->getEnvir()->alert(msg.c_str());
+    //     }
     }
 
     void SecurePlatooningApp::handleLowerMsg(cMessage* msg) {
-        // getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleLowerMsg");
-        BaseApp::handleLowerMsg(msg);
+        veins::BaseFrame1609_4* frame = check_and_cast<veins::BaseFrame1609_4*>(msg);
+        cPacket* enc = frame->getEncapsulatedPacket();
+        ASSERT2(enc, "received a BaseFrame1609_4s with nothing inside");
+
+        // filter the messages based on their kind
+        if (enc->getKind() == MANEUVER_TYPE) {
+            ManeuverMessage* mm = check_and_cast<ManeuverMessage*>(
+                frame->decapsulate());
+            // we would care about the abandon platoon message or the update platoon formation message
+            if (SecureManeuverMessage* smm = dynamic_cast<SecureManeuverMessage*>(mm)) {
+                std::string plaintext = handleSecureManeuverMessage(smm);
+                // getSimulation()->getEnvir()->alert(plaintext.c_str());
+            } else {
+                // dispatch the message to the parent class
+                BaseApp::handleLowerMsg(msg);
+            }
+            // delete the frame if it is not needed
+            delete frame;
+        } else // dispatch the message to the parent class
+            BaseApp::handleLowerMsg(msg);
     }
 
     /**
@@ -61,5 +90,78 @@ namespace plexe {
         // push the frame down to the MAC layer
         sendDown(frame);
     }
-}
 
+    /**
+     * Create a secure maneuver message intended for a vehicle in the platoon.
+     * @param message the message to be secured
+     * @param algorithm the encryption algorithm to be used, default is AES
+     * @return a secure maneuver message object
+     * @todo Implement asymmetric encryption
+     */
+    SecureManeuverMessage *SecurePlatooningApp::createSecureManeuverMessage(
+            std::string message, std::string algorithm="AES") {
+        SecureManeuverMessage* msg = new SecureManeuverMessage();
+        // configure basic maneuver message properties
+        msg->setPlatoonId(positionHelper->getPlatoonId());
+        msg->setVehicleId(positionHelper->getId());
+        msg->setExternalId(positionHelper->getExternalId().c_str());
+        // configure the secured message properties
+        msg->setAlgorithm(algorithm.c_str());
+        if (algorithm == "AES") {
+            msg->setEncryptedData(CryptoHelper::symmetricEncrypt(message, symmetricKey).c_str());
+        }
+        else {
+            // asymmetric encryption, dummy implementation for now
+            msg->setEncryptedData(CryptoHelper::asymmetricEncrypt(message, symmetricKey).c_str());
+            msg->setSignature(CryptoHelper::sign(message, symmetricKey).c_str());
+            msg->setPublicKey(symmetricKey.c_str());
+        }
+        return msg;
+    }
+
+    /**
+     * Send a secured message to a specific destination vehicle
+     * @param message the message to be sent
+     * @param destination the ID of the destination vehicle
+     */
+    void SecurePlatooningApp::sendSecuredMessage(std::string message, int destination) {
+        SecureManeuverMessage* msg = createSecureManeuverMessage(message);
+        sendUnicast(msg, destination);
+    }
+
+    /**
+     * Handle a secure maneuver message received from the MAC layer
+     * @param msg the secure maneuver message to be handled
+     * @return a string representation of the decrypted message
+     */
+    std::string SecurePlatooningApp::handleSecureManeuverMessage(SecureManeuverMessage* msg) {
+        // getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleSecureManeuverMessage");
+        // ensure that the message is for the right platoon
+        if (msg->getPlatoonId() != positionHelper->getPlatoonId())
+            return;
+        // ensure that the message is for this vehicle
+        if (msg->getDestinationId() != positionHelper->getId())
+            return;
+        // get the message properties
+        int platoonId = msg->getPlatoonId();
+        int vehicleId = msg->getVehicleId();
+        std::string externalId = msg->getExternalId();
+        std::string algorithm = msg->getAlgorithm();
+        std::string encryptedData = msg->getEncryptedData();
+        std::string signature = msg->getSignature();
+        std::string publicKey = msg->getPublicKey();
+        std::string decrypted;
+        // decrypt the message
+        if (algorithm == "AES") {
+            decrypted = CryptoHelper::symmetricDecrypt(encryptedData, symmetricKey);
+        }
+        else {
+            // asymmetric encryption, dummy implementation for now
+            decrypted = CryptoHelper::asymmetricDecrypt(encryptedData, symmetricKey);
+        }
+        // print some information about the message
+        std::string info = "SecurePlatooningApp::handleSecureManeuverMessage: platoon " + std::to_string(platoonId) + " vehicle " + std::to_string(vehicleId) + " external ID " + externalId + " algorithm " + algorithm + " encrypted data " + encryptedData + " signature " + signature + " public key " + publicKey + " decrypted " + decrypted;
+        getSimulation()->getEnvir()->alert(info.c_str());
+        return decrypted;
+    }
+} // namespace plexe

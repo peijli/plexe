@@ -138,10 +138,10 @@ namespace plexe {
         // getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleSecureManeuverMessage");
         // ensure that the message is for the right platoon
         if (msg->getPlatoonId() != positionHelper->getPlatoonId())
-            return;
+            return "";
         // ensure that the message is for this vehicle
         if (msg->getDestinationId() != positionHelper->getId())
-            return;
+            return "";
         // get the message properties
         int platoonId = msg->getPlatoonId();
         int vehicleId = msg->getVehicleId();

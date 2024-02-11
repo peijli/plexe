@@ -84,6 +84,8 @@ std::unique_ptr<BaseFrame1609_4> SecurePlatooningBeaconing::createBeacon(int des
     // wsm->encapsulate(securePkt);
     wsm->encapsulate(pkt);
 
+    // we're not using the securePkt, so we can delete it
+    delete securePkt;
     return wsm;
 }
 

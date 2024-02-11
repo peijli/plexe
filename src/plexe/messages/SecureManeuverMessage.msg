@@ -2,12 +2,12 @@ import ManeuverMessage;
 
 packet SecureManeuverMessage extends ManeuverMessage {
     // The encrypted data
-    string encryptedData;
+    string encryptedData = "";
     // The signature of the encrypted data, if applicable
-    string signature;
+    string signature = "";
     // The public key used to encrypt the data, if applicable
-    string publicKey;
+    string publicKey = "";
     // The algorithm used to encrypt the data
     // TODO: should this be an enum?
-    string algorithm;
+    string algorithm = "plaintext";
 }

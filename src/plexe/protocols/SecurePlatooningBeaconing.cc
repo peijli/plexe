@@ -1,4 +1,5 @@
 #include <map>
+#include <cassert>
 #include "SecurePlatooningBeaconing.h"
 #include "plexe/utilities/CryptoHelper.h"
 #include "plexe/utilities/JSONParser.h"
@@ -81,11 +82,10 @@ std::unique_ptr<BaseFrame1609_4> SecurePlatooningBeaconing::createBeacon(int des
 
     SecurePlatooningBeacon* securePkt = encryptBeacon(pkt);
 
-    // wsm->encapsulate(securePkt);
-    wsm->encapsulate(pkt);
-
-    // we're not using the securePkt, so we can delete it
-    delete securePkt;
+    wsm->encapsulate(securePkt);
+    // wsm->encapsulate(pkt);
+    // delete securePkt;
+    delete pkt;
     return wsm;
 }
 
@@ -108,18 +108,90 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
     map["angle"] = std::to_string(beacon->getAngle());
     // convert the map to a JSON string
     std::string json = JSONParser::stringify(map);
+    getSimulation()->getEnvir()->alert(json.c_str());
     // encrypt the JSON string
     std::string encrypted = CryptoHelper::symmetricEncrypt(json, symmetricKey);
+    std::string msg = "encrypted data length: " + std::to_string(encrypted.length());
+    getSimulation()->getEnvir()->alert(encrypted.c_str());
+    getSimulation()->getEnvir()->alert(msg.c_str());
     // set the properties of the secure beacon
     secureBeacon->setEncryptedData(encrypted.c_str());
     secureBeacon->setAlgorithm("AES");
     secureBeacon->setKind(BEACON_TYPE);
     // DO THESE EVEN WORK?
-    secureBeacon->setByteLength(beacon->getByteLength());
+    auto newByteLength = beacon->getByteLength() + encrypted.length();
+    secureBeacon->setByteLength(newByteLength);
     secureBeacon->setSequenceNumber(beacon->getSequenceNumber());
+    
+    // sanity check
+    msg = "encrypted data length: " + std::to_string(strlen(secureBeacon->getEncryptedData()));
+    ASSERT(strlen(secureBeacon->getEncryptedData()) == encrypted.length());
+    getSimulation()->getEnvir()->alert(msg.c_str());
     return secureBeacon;
 }
 
+PlatooningBeacon* SecurePlatooningBeaconing::decryptBeacon(const SecurePlatooningBeacon* secureBeacon) {
+    getSimulation()->getEnvir()->alert("decrypting beacon");
+    std::string msg = "encrypted data length: " + std::to_string(strlen(secureBeacon->getEncryptedData()));
+    getSimulation()->getEnvir()->alert(msg.c_str());
+    // decrypt the beacon
+    std::string decrypted = CryptoHelper::symmetricDecrypt(secureBeacon->getEncryptedData(), symmetricKey);
+    msg = "decrypted data length: " + std::to_string(decrypted.length());
+    getSimulation()->getEnvir()->alert(decrypted.c_str());
+    // convert the JSON string to a map
+    std::map<std::string, std::string> map = JSONParser::parse(decrypted);
+    getSimulation()->getEnvir()->alert(JSONParser::prettyPrint(map).c_str());
+    // create a PlatooningBeacon object
+    PlatooningBeacon* beacon = new PlatooningBeacon();
+    // set the properties of the beacon
+    beacon->setVehicleId(std::stoi(map["vehicleId"]));
+    beacon->setControllerAcceleration(std::stod(map["controllerAcceleration"]));
+    beacon->setAcceleration(std::stod(map["acceleration"]));
+    beacon->setSpeed(std::stod(map["speed"]));
+    beacon->setPositionX(std::stod(map["positionX"]));
+    beacon->setPositionY(std::stod(map["positionY"]));
+    beacon->setTime(std::stod(map["time"]));
+    beacon->setLength(std::stod(map["length"]));
+    beacon->setSpeedX(std::stod(map["speedX"]));
+    beacon->setSpeedY(std::stod(map["speedY"]));
+    beacon->setAngle(std::stod(map["angle"]));
+    beacon->setSequenceNumber(secureBeacon->getSequenceNumber());
+    beacon->setKind(BEACON_TYPE);
+    beacon->setByteLength(secureBeacon->getByteLength());
+    // return the beacon
+    return beacon;
+}
+
+void SecurePlatooningBeaconing::handleLowerMsg(cMessage* msg) {
+    // sanity checks
+    BaseFrame1609_4* frame = check_and_cast<BaseFrame1609_4*>(msg);
+    ASSERT2(frame, "received a frame not of type BaseFrame1609_4");
+
+    cPacket* enc = frame->getEncapsulatedPacket();
+    ASSERT2(enc, "received a BaseFrame1609_4 with nothing inside");
+
+    // check if packet is the SecurePlatooningBeacon type
+    if (SecurePlatooningBeacon * secureBeacon = dynamic_cast<SecurePlatooningBeacon*>(enc)) {
+        // decrypt the beacon
+        PlatooningBeacon* beacon = decryptBeacon(secureBeacon);
+        // handle the beacon as a normal PlatooningBeacon
+        BaseProtocol::handleLowerPlatooningBeacon(beacon, frame);
+    } else if (PlatooningBeacon * beacon = dynamic_cast<PlatooningBeacon*>(enc)) {
+        // handle the beacon as a normal PlatooningBeacon
+        BaseProtocol::handleLowerPlatooningBeacon(beacon, frame);
+    } 
+
+    // find the application responsible for this beacon
+    ApplicationMap::iterator app = apps.find(frame->getKind());
+    if (app != apps.end() && app->second.size() != 0) {
+        AppList applications = app->second;
+        for (AppList::iterator i = applications.begin(); i != applications.end(); i++) {
+            // send the message to the applications responsible for it
+            send(frame->dup(), std::get<1>(*i));
+        }
+    }
+    delete frame;
+}
 
 
 } // namespace plexe

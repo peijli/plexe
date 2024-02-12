@@ -32,11 +32,8 @@ namespace plexe {
         PlatooningBeacon* decryptBeacon(const SecurePlatooningBeacon* beacon);
     protected:
         virtual void handleSelfMsg(cMessage* msg) override;
-        // overridden metnod to send platooning beacons
-        // void sendPlatooningMessage(int destinationAddress, )
-        // virtual void messageReceived(PlatooningBeacon* pkt, BaseFrame1609_4* frame) override;.
-        // virtual void duplicatedMessageReceived(PlatooningBeacon* pkt, BaseFrame1609_4* frame) override;
         virtual std::unique_ptr<BaseFrame1609_4> createBeacon(int destinationAddress) override;
+        virtual void handleLowerMsg(cMessage* msg) override;
     public:
         SecurePlatooningBeaconing();
         virtual ~SecurePlatooningBeaconing();

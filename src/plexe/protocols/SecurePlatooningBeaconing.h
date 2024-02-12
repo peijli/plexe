@@ -5,7 +5,7 @@
 #include "SimplePlatooningBeaconing.h"
 #include "plexe/utilities/CryptoHelper.h"
 #include "plexe/messages/PlatooningBeacon_m.h"
-#include "plexe/messages/SecurePlatooningBeacon_m.h"
+#include "plexe/messages/SecurePlatooningBeacon.h"
 
 #include "veins/base/modules/BaseApplLayer.h"
 #include "veins/modules/mobility/traci/TraCIMobility.h"

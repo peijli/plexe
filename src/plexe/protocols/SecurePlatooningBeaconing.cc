@@ -27,11 +27,11 @@ void SecurePlatooningBeaconing::initialize(int stage)
         // generate encryption key
         symmetricKey = CryptoHelper::generateSymmetricKey();
     }
-    if (stage == 1) {
-        // print some useful information regarding the method and the vehicle
-        std::string msg = "SecurePlatooningBeaconing::initialize at vehicle " + std::to_string(positionHelper->getId());
-        getSimulation()->getEnvir()->alert(msg.c_str());
-    }
+    // if (stage == 1) {
+    //     // print some useful information regarding the method and the vehicle
+    //     std::string msg = "SecurePlatooningBeaconing::initialize at vehicle " + std::to_string(positionHelper->getId());
+    //     getSimulation()->getEnvir()->alert(msg.c_str());
+    // }
 }
 
 void SecurePlatooningBeaconing::handleSelfMsg(cMessage* msg)
@@ -108,42 +108,43 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
     map["angle"] = std::to_string(beacon->getAngle());
     // convert the map to a JSON string
     std::string json = JSONParser::stringify(map);
-    getSimulation()->getEnvir()->alert(json.c_str());
     // encrypt the JSON string
-    std::string encrypted = CryptoHelper::symmetricEncrypt(json, symmetricKey);
-    std::string msg = "encrypted data length: " + std::to_string(encrypted.length());
-    getSimulation()->getEnvir()->alert(encrypted.c_str());
-    getSimulation()->getEnvir()->alert(msg.c_str());
+    int dataLength = static_cast<int>(json.length());
+    char* encrypted = CryptoHelper::symmetricEncrypt(json.c_str(), dataLength, symmetricKey);
     // set the properties of the secure beacon
-    secureBeacon->setEncryptedData(encrypted.c_str());
+    // secureBeacon->setEncryptedData(encrypted);
+    // Use the plaintext for testing
+    secureBeacon->setEncryptedData(json.c_str());
+    secureBeacon->setEncryptedDataLength(dataLength);
     secureBeacon->setAlgorithm("AES");
     secureBeacon->setKind(BEACON_TYPE);
+    secureBeacon->setVehicleId(beacon->getVehicleId());
     // DO THESE EVEN WORK?
-    auto newByteLength = beacon->getByteLength() + encrypted.length();
+    auto newByteLength = beacon->getByteLength() + dataLength;
     secureBeacon->setByteLength(newByteLength);
     secureBeacon->setSequenceNumber(beacon->getSequenceNumber());
-    
-    // sanity check
-    msg = "encrypted data length: " + std::to_string(strlen(secureBeacon->getEncryptedData()));
-    ASSERT(strlen(secureBeacon->getEncryptedData()) == encrypted.length());
-    getSimulation()->getEnvir()->alert(msg.c_str());
+    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::encryptBeacon");
+    // getSimulation()->getEnvir()->alert(CryptoHelper::symmetricDecrypt(secureBeacon->getEncryptedData(), secureBeacon->getEncryptedDataLength(), symmetricKey));
+    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::encryptBeacon end");
     return secureBeacon;
 }
 
 PlatooningBeacon* SecurePlatooningBeaconing::decryptBeacon(const SecurePlatooningBeacon* secureBeacon) {
-    getSimulation()->getEnvir()->alert("decrypting beacon");
-    std::string msg = "encrypted data length: " + std::to_string(strlen(secureBeacon->getEncryptedData()));
-    getSimulation()->getEnvir()->alert(msg.c_str());
+    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::decryptBeacon");
     // decrypt the beacon
-    std::string decrypted = CryptoHelper::symmetricDecrypt(secureBeacon->getEncryptedData(), symmetricKey);
-    msg = "decrypted data length: " + std::to_string(decrypted.length());
-    getSimulation()->getEnvir()->alert(decrypted.c_str());
+    // char* decryptedChar = CryptoHelper::symmetricDecrypt(
+    //     secureBeacon->getEncryptedData(), 
+    //     secureBeacon->getEncryptedDataLength(), 
+    //     symmetricKey);
+    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::decryptBeacon end");
+    // getSimulation()->getEnvir()->alert(decryptedChar);
+    std::string decrypted(secureBeacon->getEncryptedData());
     // convert the JSON string to a map
     std::map<std::string, std::string> map = JSONParser::parse(decrypted);
-    getSimulation()->getEnvir()->alert(JSONParser::prettyPrint(map).c_str());
     // create a PlatooningBeacon object
     PlatooningBeacon* beacon = new PlatooningBeacon();
     // set the properties of the beacon
+    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::decryptBeacon STOI");
     beacon->setVehicleId(std::stoi(map["vehicleId"]));
     beacon->setControllerAcceleration(std::stod(map["controllerAcceleration"]));
     beacon->setAcceleration(std::stod(map["acceleration"]));
@@ -176,9 +177,12 @@ void SecurePlatooningBeaconing::handleLowerMsg(cMessage* msg) {
         PlatooningBeacon* beacon = decryptBeacon(secureBeacon);
         // handle the beacon as a normal PlatooningBeacon
         BaseProtocol::handleLowerPlatooningBeacon(beacon, frame);
+        // dropAndDelete(secureBeacon);
+        if (!frame) return;
     } else if (PlatooningBeacon * beacon = dynamic_cast<PlatooningBeacon*>(enc)) {
         // handle the beacon as a normal PlatooningBeacon
         BaseProtocol::handleLowerPlatooningBeacon(beacon, frame);
+        if (!frame) return;
     } 
 
     // find the application responsible for this beacon

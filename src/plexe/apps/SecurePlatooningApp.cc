@@ -111,8 +111,11 @@ namespace plexe {
         msg->setKind(MANEUVER_TYPE);
         // configure the secured message properties
         msg->setAlgorithm(algorithm.c_str());
+        int dataLength = static_cast<int>(message.size());
+        msg->setEncryptedDataLength(dataLength);
         if (algorithm == "AES") {
-            msg->setEncryptedData(CryptoHelper::symmetricEncrypt(message, symmetricKey).c_str());
+            char* encryptedData = CryptoHelper::symmetricEncrypt(message.c_str(), dataLength, symmetricKey);
+            msg->setEncryptedData(encryptedData);
         }
         else {
             // asymmetric encryption, dummy implementation for now
@@ -155,22 +158,24 @@ namespace plexe {
         // int vehicleId = msg->getVehicleId();
         std::string externalId = msg->getExternalId();
         std::string algorithm = msg->getAlgorithm();
-        std::string encryptedData = msg->getEncryptedData();
+        // std::string encryptedData = msg->getEncryptedData();
+        const char* encryptedData = msg->getEncryptedData();
+        int encryptedDataLength = msg->getEncryptedDataLength();
         std::string signature = msg->getSignature();
         std::string publicKey = msg->getPublicKey();
-        std::string decrypted;
+        char * decrypted;
         // decrypt the message
         if (algorithm == "AES") {
-            decrypted = CryptoHelper::symmetricDecrypt(encryptedData, symmetricKey);
+            decrypted = CryptoHelper::symmetricDecrypt(encryptedData, encryptedDataLength, symmetricKey);
         }
         else {
             // asymmetric encryption, dummy implementation for now
-            decrypted = CryptoHelper::asymmetricDecrypt(encryptedData, symmetricKey);
+            decrypted = CryptoHelper::asymmetricDecrypt(encryptedData, encryptedDataLength, symmetricKey);
         }
         // print some information about the message
         LOG << "SecurePlatooningApp::handleSecureManeuverMessage: received a secure maneuver message at vehicle " << positionHelper->getId() << std::endl;
         LOG << "SecurePlatooningApp::handleSecureManeuverMessage: cipher text " << encryptedData << std::endl;
         LOG << "SecurePlatooningApp::handleSecureManeuverMessage: decrypted text " << decrypted << std::endl;
-        return decrypted;
+        return std::string(decrypted);
     }
 } // namespace plexe

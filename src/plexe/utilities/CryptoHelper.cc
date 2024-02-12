@@ -13,6 +13,13 @@ namespace plexe {
         }
         return ciphertext;
     }
+    char* CryptoHelper::symmetricEncrypt(const char* plaintext, int size, std::string key) {
+        char* ciphertext = new char[size];
+        for (int i = 0; i < size; i++) {
+            ciphertext[i] = plaintext[i] ^ key[i % key.length()];
+        }
+        return ciphertext;
+    }
     /**
      * Trivial implementation of a symmetric decryption algorithm
      * similar to the AES algorithm with cipher block chaining (CBC) mode
@@ -20,6 +27,13 @@ namespace plexe {
     std::string CryptoHelper::symmetricDecrypt(std::string ciphertext, std::string key) {
         std::string plaintext = ciphertext;
         for (int i = 0; i < ciphertext.length(); i++) {
+            plaintext[i] = ciphertext[i] ^ key[i % key.length()];
+        }
+        return plaintext;
+    }
+    char* CryptoHelper::symmetricDecrypt(const char* ciphertext, int size, std::string key) {
+        char* plaintext = new char[size];
+        for (int i = 0; i < size; i++) {
             plaintext[i] = ciphertext[i] ^ key[i % key.length()];
         }
         return plaintext;
@@ -35,6 +49,9 @@ namespace plexe {
         }
         return ciphertext;
     }
+    char* CryptoHelper::asymmetricEncrypt(const char* plaintext, int size, std::string publicKey) {
+        return nullptr;
+    }
     /**
      * Trivial implementation of an asymmetric decryption algorithm
      * similar to the RSA algorithm
@@ -46,12 +63,18 @@ namespace plexe {
         }
         return plaintext;
     }
+    char* CryptoHelper::asymmetricDecrypt(const char* ciphertext, int size, std::string privateKey) {
+        return nullptr;
+    }
     /**
      * Trivial implementation of a digital signature algorithm
      * similar to the RSA algorithm
      */
     std::string CryptoHelper::sign(std::string message, std::string privateKey) {
         return message + privateKey;
+    }
+    char* CryptoHelper::sign(const char* message, int size, std::string privateKey) {
+        return nullptr;
     }
     /**
      * Trivial implementation of a digital signature verification algorithm

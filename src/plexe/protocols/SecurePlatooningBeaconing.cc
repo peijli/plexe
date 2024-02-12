@@ -19,7 +19,7 @@ using namespace veins;
 // TODO LIST
 // - [x] Test encryption and decryption on sample payload. 
 // - [x] Re-implement the encryption functionalities in this class
-// - [ ] Test this class again for performance
+// - [x] Test this class again for performance
 // - [ ] Go through literature and see how OMNet++ handles network capabilities and different packet sizes
 
 namespace plexe {

@@ -16,6 +16,12 @@ using namespace veins;
 
 // I think I have to overwrite a bunch of BaseApp methods...
 
+// TODO LIST
+// - [ ] Test encryption and decryption on sample payload. 
+// - [ ] Re-implement the encryption functionalities in this class
+// - [ ] Test this class again for performance
+// - [ ] Go through literature and see how OMNet++ handles network capabilities and different packet sizes
+
 namespace plexe {
 
 Define_Module(SecurePlatooningBeaconing)
@@ -83,9 +89,9 @@ std::unique_ptr<BaseFrame1609_4> SecurePlatooningBeaconing::createBeacon(int des
     SecurePlatooningBeacon* securePkt = encryptBeacon(pkt);
 
     wsm->encapsulate(securePkt);
+    delete pkt;
     // wsm->encapsulate(pkt);
     // delete securePkt;
-    delete pkt;
     return wsm;
 }
 
@@ -110,6 +116,8 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
     std::string json = JSONParser::stringify(map);
     // encrypt the JSON string
     int dataLength = static_cast<int>(json.length());
+    LOG << "Data length: " << dataLength << endl;
+    LOG << "Payload: " << json << endl;
     char* encrypted = CryptoHelper::symmetricEncrypt(json.c_str(), dataLength, symmetricKey);
     // set the properties of the secure beacon
     // secureBeacon->setEncryptedData(encrypted);

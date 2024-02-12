@@ -32,4 +32,6 @@ int main() {
     std::cout << "Decrypted text: " << cDecrypted << std::endl;
     assert(plaintext == decrypted);
     assert(plaintext == cDecrypted);
+
+    std::string samplePayload = "{"acceleration":"-1.092790","angle":"0.000000","controllerAcceleration":"-0.791758","length":"4.000000","positionX":"106.326000","positionY":"242.450000","speed":"1.859140","speedX":"1.859140","speedY":"0.000000","time":"6.860000","vehicleId":"4"}";
 }

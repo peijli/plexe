@@ -7,6 +7,10 @@ namespace plexe{
         std::string key;
         std::string value;
         bool isKey = true;
+
+        // trim extraneous characters after the final curly brace
+        json = json.substr(0, json.find_last_of('}') + 1);
+
         for (int i = 0; i < json.length(); i++){
             if (json[i] == '\"'){
                 i++;

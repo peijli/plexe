@@ -1,6 +1,8 @@
 // #include "plexe/utilities/CryptoHelper.h"
 #include "CryptoHelper.h"
 #include <sstream>
+#include <stdlib.h>
+#include <time.h>
 
 namespace plexe {
     /** Trivial implementation of a symmetric encryption algorithm 
@@ -108,7 +110,17 @@ namespace plexe {
      * @return a string representing the symmetric key
      * @note This is a trivial implementation that returns a fixed key for easier testing
     */
-    std::string CryptoHelper::generateSymmetricKey() {
-        return "1234567890123456";
+    std::string CryptoHelper::generateSymmetricKey(bool random) {
+        if (!random) {
+            return "114514";
+        }
+        else {
+            srand(time(NULL));
+            std::string key = "";
+            for (int i = 0; i < 16; i++) {
+                key += (char)(rand() % 256);
+            }
+            return key;
+        }
     }
 }

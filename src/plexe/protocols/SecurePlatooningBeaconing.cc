@@ -17,10 +17,8 @@ using namespace veins;
 // I think I have to overwrite a bunch of BaseApp methods...
 
 // TODO LIST
-// - [x] Test encryption and decryption on sample payload. 
-// - [x] Re-implement the encryption functionalities in this class
-// - [x] Test this class again for performance
-// - [ ] Go through literature and see how OMNet++ handles network capabilities and different packet sizes
+// - [ ] Create different keys for each vehicle
+// - [ ] Implement symmetric key exchange between leader and followers
 
 namespace plexe {
 

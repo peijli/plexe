@@ -6,7 +6,8 @@
 
 namespace plexe {
     class SecurePlatooningApp : public plexe::BaseApp {
-    std::string symmetricKey;
+    // std::string symmetricKey;
+    std::uint32_t symmetricKey;
     public:
     //virtual ~SecurePlatooningApp()
     //{

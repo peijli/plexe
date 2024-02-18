@@ -29,7 +29,7 @@ void SecurePlatooningBeaconing::initialize(int stage)
     SimplePlatooningBeaconing::initialize(stage);
     if (stage == 0) {
         // generate encryption key
-        symmetricKey = CryptoHelper::generateSymmetricKey();
+        symmetricKey = CryptoHelper::generateSymmetricKey(false);
     }
     // if (stage == 1) {
     //     // print some useful information regarding the method and the vehicle

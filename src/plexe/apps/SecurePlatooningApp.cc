@@ -24,7 +24,7 @@ namespace plexe {
         BaseApp::initialize(stage);
         if (stage == 0) {
             // generate encryption key
-            symmetricKey = CryptoHelper::generateSymmetricKey();
+            symmetricKey = CryptoHelper::generateSymmetricKey(false);
         } else if (stage == 1) {
             // connect to the MAC layer
             protocol->registerApplication(
@@ -117,12 +117,12 @@ namespace plexe {
             char* encryptedData = CryptoHelper::symmetricEncrypt(message.c_str(), dataLength, symmetricKey);
             msg->setEncryptedData(encryptedData);
         }
-        else {
-            // asymmetric encryption, dummy implementation for now
-            msg->setEncryptedData(CryptoHelper::asymmetricEncrypt(message, symmetricKey).c_str());
-            msg->setSignature(CryptoHelper::sign(message, symmetricKey).c_str());
-            msg->setPublicKey(symmetricKey.c_str());
-        }
+        // else {
+        //     // asymmetric encryption, dummy implementation for now
+        //     msg->setEncryptedData(CryptoHelper::asymmetricEncrypt(message, symmetricKey).c_str());
+        //     msg->setSignature(CryptoHelper::sign(message, symmetricKey).c_str());
+        //     msg->setPublicKey(symmetricKey.c_str());
+        // }
         return msg;
     }
 
@@ -162,16 +162,16 @@ namespace plexe {
         const char* encryptedData = msg->getEncryptedData();
         int encryptedDataLength = msg->getEncryptedDataLength();
         std::string signature = msg->getSignature();
-        std::string publicKey = msg->getPublicKey();
-        char * decrypted;
+        // std::string publicKey = msg->getPublicKey();
+        char * decrypted = new char[encryptedDataLength];
         // decrypt the message
         if (algorithm == "AES") {
             decrypted = CryptoHelper::symmetricDecrypt(encryptedData, encryptedDataLength, symmetricKey);
         }
-        else {
-            // asymmetric encryption, dummy implementation for now
-            decrypted = CryptoHelper::asymmetricDecrypt(encryptedData, encryptedDataLength, symmetricKey);
-        }
+        // else {
+        //     // asymmetric encryption, dummy implementation for now
+        //     decrypted = CryptoHelper::asymmetricDecrypt(encryptedData, encryptedDataLength, symmetricKey);
+        // }
         // print some information about the message
         LOG << "SecurePlatooningApp::handleSecureManeuverMessage: received a secure maneuver message at vehicle " << positionHelper->getId() << std::endl;
         LOG << "SecurePlatooningApp::handleSecureManeuverMessage: cipher text " << encryptedData << std::endl;

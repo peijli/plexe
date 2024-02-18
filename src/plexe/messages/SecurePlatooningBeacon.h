@@ -42,9 +42,11 @@ public:
     virtual const char * getSignature() const override;
     virtual void setPublicKey(const char* publicKey) override;
     virtual const char * getPublicKey() const override;
+    std::uint32_t getPublicKeyAsInt() const;
     void setEncryptedData(const char* encryptedData, int length);
     void setSignature(const char* signature, int length);
     void setPublicKey(const char* publicKey, int length);
+    void setPublicKey(std::uint32_t publicKey);
 };
 
 #endif

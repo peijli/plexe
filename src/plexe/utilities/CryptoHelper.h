@@ -2,6 +2,9 @@
 #define CRYPTOHELPER_H_
 
 #include <string>
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
 
 namespace plexe {
     class CryptoHelper {

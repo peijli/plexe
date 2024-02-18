@@ -1,9 +1,19 @@
 // #include "plexe/utilities/CryptoHelper.h"
 #include "CryptoHelper.h"
+#include "cryptopp/aes.h"
+#include "cryptopp/cryptlib.h"
+#include <cryptopp/modes.h>
+#include <cryptopp/filters.h>
+#include <cryptopp/osrng.h>
+#include <cryptopp/base64.h>
 #include <sstream>
 #include <stdlib.h>
 #include <time.h>
 #include <limits>
+#include <cstddef>
+// #include <bytes>
+#include <cassert>
+#include <openssl/rand.h>
 
 namespace plexe {
     /** Trivial implementation of a symmetric encryption algorithm
@@ -16,6 +26,7 @@ namespace plexe {
         for (int i = 0; i < plaintext.length(); i++) {
             ciphertext[i] = plaintext[i] ^ keyStr[i % keyStr.length()];
         }
+        // CryptoPP::AutoSeededRandomPool prng;
         return ciphertext;
     }
     char* CryptoHelper::symmetricEncrypt(const char* plaintext, int size, std::uint32_t key) {
@@ -92,6 +103,15 @@ namespace plexe {
         if (!random) {
             return 114514;
         } else {
+            // use openssl to generate a random key
+            // unsigned char buffer[16];
+            // int rc = RAND_bytes(buffer, sizeof(buffer));
+            // assert(rc == 1);
+            // std::uint32_t key = 0;
+            // for (int i = 0; i < sizeof(buffer); i++) {
+            //     key = key * 256 + buffer[i];
+            // }
+            // return key;
             srand(time(NULL));
             std::uint32_t key = rand() % std::numeric_limits<std::uint32_t>::max();
             return key;

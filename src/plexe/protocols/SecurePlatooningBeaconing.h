@@ -24,6 +24,8 @@ namespace plexe {
     private:
         // TODO: write this key to the plexe TraCI vehicle interface
         std::uint32_t symmetricKey;
+        std::uint32_t privateKey; // for Diffie-Hellman key exchange
+        std::uint32_t publicKey; // for Diffie-Hellman key exchange
         // overloaded method to check for duplicated secure beacons
         bool isDuplicated(const SecurePlatooningBeacon* beacon);
         // returns a SecurePlatooningBeacon from a PlatooningBeacon

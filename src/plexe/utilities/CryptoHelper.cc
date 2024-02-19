@@ -1,19 +1,25 @@
 // #include "plexe/utilities/CryptoHelper.h"
 #include "CryptoHelper.h"
-#include "cryptopp/aes.h"
-#include "cryptopp/cryptlib.h"
-#include <cryptopp/modes.h>
-#include <cryptopp/filters.h>
-#include <cryptopp/osrng.h>
-#include <cryptopp/base64.h>
+
+// #ifndef CRYPTOPP_LIBS
+// #define CRYPTOPP_LIBS
+// #include <cryptopp/cryptlib.h>
+// #include <cryptopp/osrng.h>
+// #include <cryptopp/integer.h>
+// #endif
+
+#include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <stdlib.h>
 #include <time.h>
 #include <limits>
 #include <cstddef>
-// #include <bytes>
 #include <cassert>
-#include <openssl/rand.h>
+
+// TODO List for 2/19
+// - [ ] Implementing Diffe-Hellman Key Exchange is too tough!
+// - [ ] Try to use openssl or cryptopp library to implement key generation and exchange
 
 namespace plexe {
     /** Trivial implementation of a symmetric encryption algorithm
@@ -103,17 +109,11 @@ namespace plexe {
         if (!random) {
             return 114514;
         } else {
-            // use openssl to generate a random key
-            // unsigned char buffer[16];
-            // int rc = RAND_bytes(buffer, sizeof(buffer));
-            // assert(rc == 1);
-            // std::uint32_t key = 0;
-            // for (int i = 0; i < sizeof(buffer); i++) {
-            //     key = key * 256 + buffer[i];
-            // }
-            // return key;
             srand(time(NULL));
             std::uint32_t key = rand() % std::numeric_limits<std::uint32_t>::max();
+            // CryptoPP::AutoSeededRandomPool prng;
+            // CryptoPP::Integer keyInt(prng, 32);
+            // std::uint32_t key = keyInt.ConvertToLong();
             return key;
         }
     }

@@ -17,9 +17,12 @@
 #include <cstddef>
 #include <cassert>
 
-// TODO List for 2/19
-// - [ ] Implementing Diffe-Hellman Key Exchange is too tough!
-// - [ ] Try to use openssl or cryptopp library to implement key generation and exchange
+// TODO: for 3/3
+// [x] Implement key exchange
+// [ ] Implement data structure for storing shared keys between leader and each follower
+// [ ] Implement plexe message for sharing keys
+// [ ] Implement symmetric key exchange between leader and followers
+// [ ] Test implementation
 
 namespace plexe {
     /** Trivial implementation of a symmetric encryption algorithm
@@ -106,15 +109,29 @@ namespace plexe {
      * @note This is a trivial implementation that returns a fixed key for easier testing
     */
     std::uint32_t CryptoHelper::generateSymmetricKey(bool random) {
+        static std::once_flag flag;
         if (!random) {
-            return 114514;
+            // return 114514;
+            // return a trivially small prime number
+            return 3;
         } else {
-            srand(time(NULL));
-            std::uint32_t key = rand() % std::numeric_limits<std::uint32_t>::max();
+            // call srand only once
+            std::call_once(flag, []() { srand(time(NULL)); });
+            std::uint32_t key = rand() % MAX_PRIVATE_KEY;
             // CryptoPP::AutoSeededRandomPool prng;
             // CryptoPP::Integer keyInt(prng, 32);
             // std::uint32_t key = keyInt.ConvertToLong();
             return key;
         }
+    }
+
+    std::uint32_t CryptoHelper::computeSharedKey(std::uint32_t privateKey) {
+        // return g^a mod p
+        return (PUBLIC_BASE ^ privateKey) % PUBLIC_MODULUS;
+    }
+
+    std::uint32_t CryptoHelper::computeSharedSecret(std::uint32_t privateKey, std::uint32_t sharedKey) {
+        // return g^ab mod p
+        return (sharedKey ^ privateKey) % PUBLIC_MODULUS;
     }
 }

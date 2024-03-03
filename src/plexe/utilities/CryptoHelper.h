@@ -2,6 +2,7 @@
 #define CRYPTOHELPER_H_
 
 #include <string>
+#include <mutex>
 
 namespace plexe {
     class CryptoHelper {
@@ -18,6 +19,17 @@ namespace plexe {
         static char* sign(const char* message, int size, std::uint32_t privateKey);
         static bool verify(std::string message, std::string signature, std::uint32_t publicKey);
         static std::uint32_t generateSymmetricKey(bool random = false);
+
+        static const std::uint32_t MAX_PRIVATE_KEY = 10;
+
+        // constants for diffe-hellman key exchange
+        static const std::uint32_t PUBLIC_MODULUS = 5;
+        static const std::uint32_t PUBLIC_BASE = 3;
+
+        // functions for key exchange
+        static std::uint32_t computeSharedKey(std::uint32_t privateKey);
+        static std::uint32_t computeSharedSecret(std::uint32_t privateKey, std::uint32_t sharedKey);
+        
     };
 }
 

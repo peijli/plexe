@@ -9,10 +9,6 @@ namespace plexe {
     // std::string symmetricKey;
     std::uint32_t symmetricKey;
     public:
-    //virtual ~SecurePlatooningApp()
-    //{
-    //    delete symmetricKey;
-    //}
         virtual void sendUnicast(cPacket* msg, int destination);
         void sendSecuredMessage(std::string message, int destination);
     protected:

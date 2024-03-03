@@ -1,0 +1,13 @@
+#
+# Usage:
+#    make -f makemakefiles
+# or, for Microsoft Visual C++:
+#    nmake -f makemakefiles MMOPT=-n
+#
+
+MAKEMAKE=opp_makemake $(MMOPT)
+
+VEINS_PROJ=../veins-5.2/examples/veins
+
+all:
+	cd src && $(MAKEMAKE) --make-so -f --deep -o plexe -O out -pPLEXE -I"D:/cee_490_sim/cryptopp" -I. -lD:\cee_490_sim\cryptopp\libcryptopp.a

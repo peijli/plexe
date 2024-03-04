@@ -9,4 +9,5 @@ packet SecurePlatooningBeacon extends PlatooningBeacon {
     string publicKey = "";
     int publicKeyLength = 0;
     string algorithm = "plaintext";
+    int destinationId = 0;
 }

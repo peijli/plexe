@@ -32,8 +32,8 @@ namespace plexe {
         // overloaded method to check for duplicated secure beacons
         bool isDuplicated(const SecurePlatooningBeacon* beacon);
         // returns a SecurePlatooningBeacon from a PlatooningBeacon
-        SecurePlatooningBeacon* encryptBeacon(const PlatooningBeacon* beacon);
-        KeyExchangeMessage* createKeyExchangeMessage(int destinationAddress);
+        SecurePlatooningBeacon* encryptBeacon(const PlatooningBeacon* beacon, int destinationAddress);
+        KeyExchangeMessage* createKeyExchangeMessage(int destinationAddress, bool acknowledge=false);
         virtual void sendUnicast(cPacket* msg, int destination);
         void handleKeyExchangeMessage(KeyExchangeMessage* msg);
     protected:
@@ -43,6 +43,11 @@ namespace plexe {
         // returns a decrypted and parsed beacon from received SecurePlatooningBeacon
         PlatooningBeacon* handleSecurePlatooningBeacon(SecurePlatooningBeacon* beacon);
         std::map<std::string, std::string>* decryptBeacon(const SecurePlatooningBeacon* beacon);
+        /**
+         * Sends a platooning message with all information about the car. This is an utility function for
+         * subclasses
+         */
+        void sendPlatooningMessage(int destinationAddress, enum PlexeRadioInterfaces interfaces = PlexeRadioInterfaces::ALL);
     public:
         SecurePlatooningBeaconing();
         virtual ~SecurePlatooningBeaconing();

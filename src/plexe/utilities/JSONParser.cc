@@ -1,5 +1,7 @@
 // #include "plexe/utilities/JSONParser.h"
 #include "JSONParser.h"
+#include <cassert>
+#include <stdexcept>
 
 namespace plexe{
     std::map<std::string, std::string> JSONParser::parse(std::string json){
@@ -27,6 +29,9 @@ namespace plexe{
                 }
                 isKey = !isKey;
             }
+        }
+        if(map.find("vehicleId") == map.end()) {
+            throw std::invalid_argument("JSONParser::parse: vehicleId not found in JSON string");
         }
         return map;
     }

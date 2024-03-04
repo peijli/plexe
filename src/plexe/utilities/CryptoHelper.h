@@ -23,13 +23,14 @@ namespace plexe {
         static const std::uint32_t MAX_PRIVATE_KEY = 10;
 
         // constants for diffe-hellman key exchange
-        static const std::uint32_t PUBLIC_MODULUS = 5;
-        static const std::uint32_t PUBLIC_BASE = 3;
+        static const std::uint32_t PUBLIC_MODULUS = 7;
+        static const std::uint32_t PUBLIC_BASE = 2;
 
         // functions for key exchange
         static std::uint32_t computeSharedKey(std::uint32_t privateKey);
         static std::uint32_t computeSharedSecret(std::uint32_t privateKey, std::uint32_t sharedKey);
         
+        static std::uint32_t power(std::uint32_t base, std::uint32_t exp);
     };
 }
 

@@ -24,6 +24,7 @@ namespace plexe {
     class SecurePlatooningBeaconing : public SimplePlatooningBeaconing {
     private:
         // TODO: write this key to the plexe TraCI vehicle interface
+        cMessage* keyExchangeMsg;
         std::uint32_t fallbackKey;
         std::uint32_t symmetricKey;
         std::uint32_t privateKey; // for Diffie-Hellman key exchange
@@ -36,7 +37,7 @@ namespace plexe {
         KeyExchangeMessage* createKeyExchangeMessage(int destinationAddress, bool acknowledge=false);
         virtual void sendUnicast(cPacket* msg, int destination);
         void handleKeyExchangeMessage(KeyExchangeMessage* msg);
-        void keyExchange();
+        void keyExchange(cMessage *msg);
     protected:
         virtual void handleSelfMsg(cMessage* msg) override;
         virtual std::unique_ptr<BaseFrame1609_4> createBeacon(int destinationAddress) override;

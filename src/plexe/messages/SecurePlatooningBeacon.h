@@ -42,6 +42,7 @@ public:
     void setMAC(const char* mac, int length);
     void setMAC(std::string mac);
     const char * getMAC() const;
+    std::string getMACString() const;
 };
 
 #endif

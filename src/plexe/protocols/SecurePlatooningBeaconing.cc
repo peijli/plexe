@@ -180,6 +180,7 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
 
     std::string mac = CryptoHelper::computeMAC(json, keyToUse);
     secureBeacon->setMAC(mac.c_str(), mac.length());
+    LOG << "MAC: " << mac << endl;
 
     LOG << "Encrypted message: " << encrypted << endl;
     secureBeacon->setEncryptedData(encrypted, dataLength);
@@ -201,12 +202,14 @@ PlatooningBeacon *SecurePlatooningBeaconing::handleSecurePlatooningBeacon(Secure
     // }
     LOG << "Message with sequence number " << secureBeacon->getSequenceNumber() << " from vehicle " << secureBeacon->getVehicleId() << " to vehicle " << myId << " is being decrypted." << endl;
     LOG << "Encrypted message: " << secureBeacon->getEncryptedData() << endl;
-    // decrypt the beacon
-    std::map<std::string, std::string> * map = decryptBeacon(secureBeacon);
+
     // create a PlatooningBeacon object
     PlatooningBeacon* beacon = new PlatooningBeacon();
+
     // set the properties of the beacon
     try {
+        // decrypt the beacon
+        std::map<std::string, std::string>* map = decryptBeacon(secureBeacon);
         beacon->setVehicleId(std::stoi(map->at("vehicleId")));
         beacon->setControllerAcceleration(std::stod(map->at("controllerAcceleration")));
         beacon->setAcceleration(std::stod(map->at("acceleration")));
@@ -221,10 +224,12 @@ PlatooningBeacon *SecurePlatooningBeaconing::handleSecurePlatooningBeacon(Secure
         beacon->setSequenceNumber(secureBeacon->getSequenceNumber());
         beacon->setKind(BEACON_TYPE);
         beacon->setByteLength(secureBeacon->getByteLength());
+        delete map;
     }
 
     catch (...) {
         // getSimulation()->getEnvir()->alert("Error parsing decrypted map");
+        LOG << "Error parsing decrypted map" << endl;
         LOG << "Falling back to using own vehicle data" << endl;
         // vehicle's data to be included in the message
         VEHICLE_DATA data;
@@ -247,7 +252,6 @@ PlatooningBeacon *SecurePlatooningBeaconing::handleSecurePlatooningBeacon(Secure
     }
     
     // return the beacon
-    delete map;
     return beacon;
 }
 
@@ -284,6 +288,7 @@ std::map<std::string, std::string>* SecurePlatooningBeaconing::decryptBeacon(con
     catch (...) {
         LOG << "Error parsing decrypted message" << endl;
         LOG << "Using a fallback key" << endl;
+        keyToUse = fallbackKey;
         decryptedChar = CryptoHelper::symmetricDecrypt(ciphertext, size, fallbackKey);
         decrypted = std::string(decryptedChar, secureBeacon->getEncryptedDataLength());
         LOG << "Decrypted message: " << decrypted << endl;
@@ -294,6 +299,17 @@ std::map<std::string, std::string>* SecurePlatooningBeaconing::decryptBeacon(con
             LOG << "Error parsing decrypted message" << endl;
         }
     }
+
+    // verify the MAC
+    std::string expectedMAC = CryptoHelper::computeMAC(decrypted, keyToUse);
+    std::string receivedMAC = secureBeacon->getMACString();
+    if (expectedMAC != receivedMAC) {
+        LOG << "MAC verification failed" << endl;
+        throw std::runtime_error("MAC verification failed");
+    } else {
+        LOG << "MAC verification succeeded" << endl;
+    }
+
     return map;
 }
 

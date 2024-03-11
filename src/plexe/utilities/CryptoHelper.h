@@ -26,6 +26,15 @@ namespace plexe {
         static const std::uint32_t PUBLIC_MODULUS = 7;
         static const std::uint32_t PUBLIC_BASE = 2;
 
+        // functions for message authentication code
+        // Note that the message authentication code should also include a sequence number to prevent replay attacks
+        // TODO: I know that using a real HMAC-SHA256 is better, but I'm not sure how to implement it in C++ without using a library
+        // I don't think doing length extension attacks is a concern in this context, since the length of JSON strings in platooning beacons is not secret and fixed
+        static std::string computeMAC(std::string message, std::uint32_t key);
+        static char *computeMAC(const char *message, int size, std::uint32_t key);
+        static bool verifyMAC(std::string message, std::string mac, std::uint32_t key);
+        static bool verifyMAC(const char *message, int size, const char *mac, int macSize, std::uint32_t key);
+
         // functions for key exchange
         static std::uint32_t computeSharedKey(std::uint32_t privateKey);
         static std::uint32_t computeSharedSecret(std::uint32_t privateKey, std::uint32_t sharedKey);

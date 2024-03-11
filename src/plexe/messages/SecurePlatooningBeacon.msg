@@ -4,10 +4,8 @@ packet SecurePlatooningBeacon extends PlatooningBeacon {
     @customize(true);
     string encryptedData = "";
     int encryptedDataLength = 0;
-    string signature = "";
-    int signatureLength = 0;
-    string publicKey = "";
-    int publicKeyLength = 0;
+    string mac = "";
+    int macLength = 0;
     string algorithm = "plaintext";
     int destinationId = 0;
 }

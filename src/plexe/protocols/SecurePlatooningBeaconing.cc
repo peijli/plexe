@@ -178,6 +178,9 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
     char * encrypted = CryptoHelper::symmetricEncrypt(
         json.c_str(), dataLength, keyToUse);
 
+    std::string mac = CryptoHelper::computeMAC(json, keyToUse);
+    secureBeacon->setMAC(mac.c_str(), mac.length());
+
     LOG << "Encrypted message: " << encrypted << endl;
     secureBeacon->setEncryptedData(encrypted, dataLength);
     secureBeacon->setAlgorithm("AES");

@@ -61,7 +61,7 @@ namespace plexe {
             // get the platoon formation as a vector
             std::vector<int> formation = positionHelper->getPlatoonFormation();
             std::string message = "This is an encrypted message from vehicle " + std::to_string(positionHelper->getId());
-            appl->sendSecuredMessage(message, formation[formation.size() - 1]);
+            // appl->sendSecuredMessage(message, formation[formation.size() - 1]);
         }
     }
 

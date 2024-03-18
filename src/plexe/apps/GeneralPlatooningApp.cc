@@ -72,6 +72,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::handleSelfMsg(cMessage* msg) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::handleSelfMsg");
         if (joinManeuver && joinManeuver->handleSelfMsg(msg)) return;
         if (mergeManeuver && mergeManeuver->handleSelfMsg(msg)) return;
         BaseApp::handleSelfMsg(msg);
@@ -106,6 +107,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::startJoinManeuver(int platoonId, int leaderId, int position) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::startJoinManeuver");
         ASSERT(getPlatoonRole() == PlatoonRole::NONE);
         ASSERT(!isInManeuver());
 
@@ -117,6 +119,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::startMergeManeuver(int platoonId, int leaderId, int position) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::startMergeManeuver");
         ASSERT(getPlatoonRole() == PlatoonRole::LEADER);
         ASSERT(!isInManeuver());
 
@@ -165,6 +168,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::handleUpdatePlatoonData(const UpdatePlatoonData* msg) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::handleUpdatePlatoonData");
         if (getPlatoonRole() != PlatoonRole::FOLLOWER) return;
         if (msg->getPlatoonId() != positionHelper->getPlatoonId()) return;
         if (msg->getVehicleId() != positionHelper->getLeaderId()) return;
@@ -175,6 +179,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::handleUpdatePlatoonFormation(const UpdatePlatoonFormation* msg) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::handleUpdatePlatoonFormation");
         if (getPlatoonRole() != PlatoonRole::FOLLOWER) return;
         if (msg->getPlatoonId() != positionHelper->getPlatoonId()) return;
         if (msg->getVehicleId() != positionHelper->getLeaderId()) return;
@@ -195,6 +200,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::onPlatoonBeacon(const PlatooningBeacon* pb) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::onPlatoonBeacon");
         joinManeuver->onPlatoonBeacon(pb);
         mergeManeuver->onPlatoonBeacon(pb);
         // maintain platoon
@@ -202,6 +208,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::onManeuverMessage(ManeuverMessage* mm) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::onManeuverMessage");
         if (activeManeuver) {
             activeManeuver->onManeuverMessage(mm);
         } else {
@@ -212,6 +219,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::fillManeuverMessage(ManeuverMessage* msg, int vehicleId, std::string externalId, int platoonId, int destinationId) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::fillManeuverMessage");
         msg->setKind(MANEUVER_TYPE);
         msg->setVehicleId(vehicleId);
         msg->setExternalId(externalId.c_str());
@@ -220,6 +228,7 @@ namespace plexe {
     }
 
     UpdatePlatoonData* GeneralPlatooningApp::createUpdatePlatoonData(int vehicleId, std::string externalId, int platoonId, int destinationId, double platoonSpeed, int platoonLane, const std::vector<int>& platoonFormation, int newPlatoonId) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::createUpdatePlatoonData");
         UpdatePlatoonData* msg = new UpdatePlatoonData("UpdatePlatoonData");
         fillManeuverMessage(msg, vehicleId, externalId, platoonId, destinationId);
         msg->setPlatoonSpeed(platoonSpeed);
@@ -233,6 +242,7 @@ namespace plexe {
     }
 
     UpdatePlatoonFormation* GeneralPlatooningApp::createUpdatePlatoonFormation(int vehicleId, std::string externalId, int platoonId, int destinationId, double platoonSpeed, int platoonLane, const std::vector<int>& platoonFormation) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::createUpdatePlatoonFormation");
         UpdatePlatoonFormation* msg = new UpdatePlatoonFormation("UpdatePlatoonFormation");
         fillManeuverMessage(msg, vehicleId, externalId, platoonId, destinationId);
         msg->setPlatoonSpeed(platoonSpeed);
@@ -245,6 +255,7 @@ namespace plexe {
     }
 
     void GeneralPlatooningApp::receiveSignal(cComponent* src, simsignal_t id, cObject* value, cObject* details) {
+        getSimulation()->getEnvir()->alert("GeneralPlatooningApp::receiveSignal");
         if (id == Mac1609_4::sigRetriesExceeded) {
             BaseFrame1609_4* frame = check_and_cast<BaseFrame1609_4*>(value);
             ManeuverMessage* mm = check_and_cast<ManeuverMessage*>(frame->getEncapsulatedPacket());

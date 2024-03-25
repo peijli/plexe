@@ -13,6 +13,8 @@
 #include "plexe/driver/Veins11pRadioDriver.h"
 #include "plexe/messages/PlexeInterfaceControlInfo_m.h"
 
+#define KEY_EXCHANGE false
+
 // Still bugs in scheduling keyExchangeMsg
 // Look towards similar self messages in SimplePlatooningBeaconing.cc for guidance
 
@@ -44,8 +46,15 @@ void SecurePlatooningBeaconing::initialize(int stage)
 }
 
 void SecurePlatooningBeaconing::keyExchange(cMessage * msg) {
-    privateKey = CryptoHelper::generateSymmetricKey(true);
+    privateKey = CryptoHelper::generateSymmetricKey(KEY_EXCHANGE);
     auto platoonFormation = positionHelper->getPlatoonFormation();
+    if (!KEY_EXCHANGE) {
+        for (auto i : platoonFormation) {
+            sharedKeyStore.setSharedKey(i, privateKey);
+        }
+        return;
+    }
+
     for (auto i : platoonFormation) {
         sharedKeyStore.setSharedKey(i, std::numeric_limits<std::uint32_t>::max());
     }
@@ -275,7 +284,6 @@ PlatooningBeacon *SecurePlatooningBeaconing::handleSecurePlatooningBeacon(Secure
 std::map<std::string, std::string>* SecurePlatooningBeaconing::decryptBeacon(const SecurePlatooningBeacon* secureBeacon) {
     const char* decryptedChar = new char[secureBeacon->getEncryptedDataLength()];
     std::string decrypted = "";
-
 
     auto ciphertext = secureBeacon->getEncryptedData();
     auto size = secureBeacon->getEncryptedDataLength();

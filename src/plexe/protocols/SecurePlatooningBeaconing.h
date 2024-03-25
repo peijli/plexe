@@ -23,7 +23,7 @@ namespace plexe {
     class SecurePlatooningBeaconing : public SimplePlatooningBeaconing {
     private:
         // TODO: write this key to the plexe TraCI vehicle interface
-        std::string symmetricKey;
+        std::uint32_t symmetricKey;
         // overloaded method to check for duplicated secure beacons
         bool isDuplicated(const SecurePlatooningBeacon* beacon);
         // returns a SecurePlatooningBeacon from a PlatooningBeacon

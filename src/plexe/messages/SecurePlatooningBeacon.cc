@@ -24,6 +24,7 @@
 #include "plexe/utilities/StringHelper.h"
 
 #include <iostream>
+#include <string>
 
 Register_Class(SecurePlatooningBeacon);
 void SecurePlatooningBeacon::copy(const SecurePlatooningBeacon& other) {
@@ -107,5 +108,18 @@ const char * SecurePlatooningBeacon::getSignature() const {
 
 const char * SecurePlatooningBeacon::getPublicKey() const {
     return plexe::StringHelper::customDeepCopy(this->publicKey.c_str(), publicKeyLength);
+}
+
+std::uint32_t SecurePlatooningBeacon::getPublicKeyAsInt() const {
+    return std::stoul(this->publicKey.c_str());
+}
+
+void SecurePlatooningBeacon::setPublicKey(std::uint32_t publicKey) {
+    std::string publicKeyStr = std::to_string(publicKey);
+    this->publicKeyLength = publicKeyStr.length();
+    char* buffer = this->publicKey.reserve(publicKeyStr.length());
+    for (int i = 0; i < publicKeyStr.length(); i++) {
+        buffer[i] = publicKeyStr[i];
+    }
 }
 

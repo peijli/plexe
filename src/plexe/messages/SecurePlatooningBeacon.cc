@@ -88,3 +88,12 @@ void SecurePlatooningBeacon::setMAC(std::string mac) {
 const char * SecurePlatooningBeacon::getMAC() const {
     return plexe::StringHelper::customDeepCopy(this->mac.c_str(), macLength);
 }
+
+std::string SecurePlatooningBeacon::getMACString() const {
+    std::string macString;
+    const char * macCStr = this->mac.c_str();
+    for (int i = 0; i < macLength; i++) {
+        macString += macCStr[i];
+    }
+    return macString;
+}

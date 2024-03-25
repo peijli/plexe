@@ -6,7 +6,7 @@ public:
 
 protected:
     virtual void initialize(int stage) override;
-    virtual void handleMessage(cMessage* msg) override;
+    virtual void handleLowerMsg(cMessage* msg) override;
     BaseScenario* scenario;
 
 private:

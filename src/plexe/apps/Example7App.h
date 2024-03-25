@@ -4,7 +4,7 @@
 #include "plexe/messages/UpdatePlatoonFormation_m.h"
 #include "plexe/CC_Const.h"
 
-namespace plexe{
+namespace plexe {
     class Example7App : public plexe::BaseApp {
 
     public:

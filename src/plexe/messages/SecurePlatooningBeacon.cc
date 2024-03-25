@@ -23,48 +23,78 @@
 #include "SecurePlatooningBeacon.h"
 #include "plexe/utilities/StringHelper.h"
 
+#include <iostream>
+
 Register_Class(SecurePlatooningBeacon);
 void SecurePlatooningBeacon::copy(const SecurePlatooningBeacon& other) {
     // TODO: this might not work! Check if the deep copy is actually performed
     // char * encryptedDataBuffer = this->encryptedData.reserve(other.encryptedDataLength);
     // encryptedDataBuffer = plexe::StringHelper::customDeepCopy(other.encryptedData.c_str(), other.encryptedDataLength);
-    encryptedData = plexe::StringHelper::customDeepCopy(other.encryptedData.c_str(), other.encryptedDataLength);
+    char * buffer = this->encryptedData.reserve(other.encryptedDataLength);
+    const char * otherBuffer = other.encryptedData.c_str();
+    for (int i = 0; i < other.encryptedDataLength; i++) {
+        buffer[i] = otherBuffer[i];
+    }
     encryptedDataLength = other.encryptedDataLength;
-    char * signatureBuffer = this->signature.reserve(other.signatureLength);
-    signatureBuffer = plexe::StringHelper::customDeepCopy(other.signature.c_str(), other.signatureLength);
+    buffer = this->signature.reserve(other.signatureLength);
+    otherBuffer = other.signature.c_str();
+    for (int i = 0; i < other.signatureLength; i++) {
+        buffer[i] = otherBuffer[i];
+    }
     signatureLength = other.signatureLength;
-    char * publicKeyBuffer = this->publicKey.reserve(other.publicKeyLength);
-    publicKeyBuffer = plexe::StringHelper::customDeepCopy(other.publicKey.c_str(), other.publicKeyLength);
+    buffer = this->publicKey.reserve(other.publicKeyLength);
+    otherBuffer = other.publicKey.c_str();
+    for (int i = 0; i < other.publicKeyLength; i++) {
+        buffer[i] = otherBuffer[i];
+    }
     publicKeyLength = other.publicKeyLength;
     // we don't need to deep copy the algorithm, as it is a constant string
     algorithm = other.algorithm;
 }
 
 void SecurePlatooningBeacon::setEncryptedData(const char* encryptedData) {
-    this->encryptedData = plexe::StringHelper::customDeepCopy(encryptedData, encryptedDataLength);
+    char* buffer = this->encryptedData.reserve(encryptedDataLength);
+    for (int i = 0; i < encryptedDataLength; i++) {
+        buffer[i] = encryptedData[i];
+    }
 }
 
 void SecurePlatooningBeacon::setSignature(const char* signature) {
-    this->signature = plexe::StringHelper::customDeepCopy(signature, signatureLength);
+    char* buffer = this->signature.reserve(signatureLength);
+    for (int i = 0; i < signatureLength; i++) {
+        buffer[i] = signature[i];
+    }
 }
 
 void SecurePlatooningBeacon::setPublicKey(const char* publicKey) {
-    this->publicKey = plexe::StringHelper::customDeepCopy(publicKey, publicKeyLength);
+    char* buffer = this->publicKey.reserve(publicKeyLength);
+    for (int i = 0; i < publicKeyLength; i++) {
+        buffer[i] = publicKey[i];
+    }
 }
 
 void SecurePlatooningBeacon::setEncryptedData(const char* encryptedData, int length) {
     this->encryptedDataLength = length;
-    this->encryptedData = plexe::StringHelper::customDeepCopy(encryptedData, length);
+    char* buffer = this->encryptedData.reserve(length);
+    for (int i = 0; i < length; i++) {
+        buffer[i] = encryptedData[i];
+    }
 }
 
 void SecurePlatooningBeacon::setSignature(const char* signature, int length) {
-    signatureLength = length;
-    this->signature = plexe::StringHelper::customDeepCopy(signature, length);
+    this->signatureLength = length;
+    char* buffer = this->signature.reserve(length);
+    for (int i = 0; i < length; i++) {
+        buffer[i] = signature[i];
+    }
 }
 
 void SecurePlatooningBeacon::setPublicKey(const char* publicKey, int length) {
-    publicKeyLength = length;
-    this->publicKey = plexe::StringHelper::customDeepCopy(publicKey, length);
+    this->publicKeyLength = length;
+    char* buffer = this->publicKey.reserve(length);
+    for (int i = 0; i < length; i++) {
+        buffer[i] = publicKey[i];
+    }
 }
 
 const char * SecurePlatooningBeacon::getEncryptedData() const {

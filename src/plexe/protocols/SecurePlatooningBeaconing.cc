@@ -116,46 +116,49 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
     std::string json = JSONParser::stringify(map);
     // encrypt the JSON string
     int dataLength = static_cast<int>(json.length());
-    LOG << "Data length: " << dataLength << endl;
+    LOG << "Message with sequence number " << beacon->getSequenceNumber() << " from vehicle " << myId << " to vehicle " << beacon->getVehicleId() << " is being encrypted." << endl;
     LOG << "Payload: " << json << endl;
     char* encrypted = CryptoHelper::symmetricEncrypt(json.c_str(), dataLength, symmetricKey);
-    // set the properties of the secure beacon
-    // secureBeacon->setEncryptedData(encrypted);
-    // Use the plaintext for testing
-    secureBeacon->setEncryptedData(json.c_str(), dataLength);
+    LOG << "Encrypted message: " << encrypted << endl;
+    secureBeacon->setEncryptedData(encrypted, dataLength);
     secureBeacon->setAlgorithm("AES");
+
+    // Use the plaintext for testing
+    // secureBeacon->setEncryptedData(json.c_str(), dataLength);
+    // secureBeacon->setAlgorithm("plaintext");
+
+    // set the properties of the secure beacon
     secureBeacon->setKind(BEACON_TYPE);
     secureBeacon->setVehicleId(beacon->getVehicleId());
-    // DO THESE EVEN WORK?
     auto newByteLength = beacon->getByteLength() + dataLength;
     secureBeacon->setByteLength(newByteLength);
     secureBeacon->setSequenceNumber(beacon->getSequenceNumber());
-    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::encryptBeacon");
-    // getSimulation()->getEnvir()->alert(CryptoHelper::symmetricDecrypt(secureBeacon->getEncryptedData(), secureBeacon->getEncryptedDataLength(), symmetricKey));
-    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::encryptBeacon end");
     return secureBeacon;
 }
 
 PlatooningBeacon* SecurePlatooningBeaconing::decryptBeacon(const SecurePlatooningBeacon* secureBeacon) {
-    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::decryptBeacon");
+    LOG << "Message with sequence number " << secureBeacon->getSequenceNumber() << " from vehicle " << secureBeacon->getVehicleId() << " to vehicle " << myId << " is being decrypted." << endl;
+    LOG << "Encrypted message: " << secureBeacon->getEncryptedData() << endl;
     // decrypt the beacon
-    // char* decryptedChar = CryptoHelper::symmetricDecrypt(
-    //     secureBeacon->getEncryptedData(), 
-    //     secureBeacon->getEncryptedDataLength(), 
-    //     symmetricKey);
-    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::decryptBeacon end");
-    // getSimulation()->getEnvir()->alert(decryptedChar);
-    const char* decryptedChar = secureBeacon->getEncryptedData();
-    int decryptedLength = secureBeacon->getEncryptedDataLength();
-    std::string decrypted(decryptedChar, decryptedLength);
+    const char* decryptedChar = new char[secureBeacon->getEncryptedDataLength()];
+    std::string decrypted = "";
+    std::string algorithm = secureBeacon->getAlgorithm();
+    if (algorithm == "AES") {
+        decryptedChar = CryptoHelper::symmetricDecrypt(
+            secureBeacon->getEncryptedData(), 
+            secureBeacon->getEncryptedDataLength(), 
+            symmetricKey);
+    } else { // assume plaintext
+        decryptedChar = secureBeacon->getEncryptedData();
+    }
+    decrypted = std::string(decryptedChar, secureBeacon->getEncryptedDataLength());
     // convert the JSON string to a map
-    std::string msg = "Decrypted: " + decrypted + " Sequence number: " + std::to_string(secureBeacon->getSequenceNumber());
-    getSimulation()->getEnvir()->alert(msg.c_str());
+    LOG << "Decrypted message: " << decrypted << endl;
+    // getSimulation()->getEnvir()->alert(msg.c_str());
     std::map<std::string, std::string> map = JSONParser::parse(decrypted);
     // create a PlatooningBeacon object
     PlatooningBeacon* beacon = new PlatooningBeacon();
     // set the properties of the beacon
-    // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::decryptBeacon STOI");
     beacon->setVehicleId(std::stoi(map["vehicleId"]));
     beacon->setControllerAcceleration(std::stod(map["controllerAcceleration"]));
     beacon->setAcceleration(std::stod(map["acceleration"]));

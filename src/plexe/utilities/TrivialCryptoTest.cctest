@@ -3,35 +3,39 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+#include <cstring>
 // #include "plexe/utilities/CryptoHelper.h"
 #include "CryptoHelper.h"
+#include "StringHelper.h"
+using namespace plexe;
 
 int main() {
     std::string plaintext = "Hello, world!";
-    std::string key = "key";
-    std::string publicKey = "public";
-    std::string privateKey = "private";
+    std::string key = CryptoHelper::generateSymmetricKey();
+    std::cout << "key: " << key << std::endl;
 
-    std::cout << "Plaintext: " << plaintext << std::endl;
-    std::cout << "Key: " << key << std::endl;
-    std::cout << "Plaintext in hex: " << plexe::CryptoHelper::stringToHex(plaintext) << std::endl;
-    std::cout << "Key in hex: " << plexe::CryptoHelper::stringToHex(key) << std::endl;
+    std::string samplePayload = "{\"acceleration\":\"-1.092790\",\"angle\":\"0.000000\",\"controllerAcceleration\":\"-0.791758\",\"length\":\"4.000000\",\"positionX\":\"106.326000\",\"positionY\":\"242.450000\",\"speed\":\"1.859140\",\"speedX\":\"1.859140\",\"speedY\":\"0.000000\",\"time\":\"6.860000\",\"vehicleId\":\"4\"}";
+    std::cout << "samplePayload: " << samplePayload << std::endl;
 
-    std::cout << "Testing symmetric encryption and decryption" << std::endl;
-    std::string ciphertext = plexe::CryptoHelper::symmetricEncrypt(plaintext, key);
-    std::string decrypted = plexe::CryptoHelper::symmetricDecrypt(ciphertext, key);
-    std::cout << "Cipher text: " << ciphertext << std::endl;
-    std::cout << "Decrypted text: " << decrypted << std::endl;
+    std::cout << "Testing encryption and decryption with std::string objects" << std::endl;
+    std::string ciphertext = CryptoHelper::symmetricEncrypt(samplePayload, key);
+    std::cout << "ciphertext: " << ciphertext << std::endl;
+    std::cout << "ciphertext length: " << ciphertext.length() << std::endl;
+    std::string decrypted = CryptoHelper::symmetricDecrypt(ciphertext, key);
+    std::cout << "decrypted: " << decrypted << std::endl;
+    assert(samplePayload == decrypted);
 
-    std::cout << "Testing symmetric encryption and decryption with char arrays" << std::endl;
-    char* cPlaintext = (char*)plaintext.c_str();
-    int size = plaintext.length();
-    char* cCiphertext = plexe::CryptoHelper::symmetricEncrypt(cPlaintext, size, key);
-    char* cDecrypted = plexe::CryptoHelper::symmetricDecrypt(cCiphertext, size, key);
-    std::cout << "Cipher text: " << cCiphertext << std::endl;
-    std::cout << "Decrypted text: " << cDecrypted << std::endl;
-    assert(plaintext == decrypted);
-    assert(plaintext == cDecrypted);
+    std::cout << "Testing encryption and decryption with char* objects" << std::endl;
+    int dataLength = static_cast<int>(strlen(samplePayload.c_str()));
+    char* encrypted = CryptoHelper::symmetricEncrypt(samplePayload.c_str(), dataLength, key);
+    std::cout << "encrypted: " << encrypted << std::endl;
+    std::cout << "encrypted strlen: " << strlen(encrypted) << std::endl;
+    // char* decryptedChar = CryptoHelper::symmetricDecrypt(encrypted, dataLength, key);
+    char* encryptedCopy = StringHelper::customDeepCopy(encrypted, dataLength);
+    
+    std::string encryptedCopyStr = StringHelper::customCharToString(encryptedCopy, dataLength);
+    std::string decryptedString = CryptoHelper::symmetricDecrypt(encryptedCopyStr, key);
+    std::cout << "decryptedString: " << decryptedString << std::endl;
 
-    std::string samplePayload = "{"acceleration":"-1.092790","angle":"0.000000","controllerAcceleration":"-0.791758","length":"4.000000","positionX":"106.326000","positionY":"242.450000","speed":"1.859140","speedX":"1.859140","speedY":"0.000000","time":"6.860000","vehicleId":"4"}";
+    return 0;
 }

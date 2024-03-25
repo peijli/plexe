@@ -1,5 +1,5 @@
-#include "plexe/utilities/JSONParser.h"
-// #include "JSONParser.h"
+// #include "plexe/utilities/JSONParser.h"
+#include "JSONParser.h"
 
 namespace plexe{
     std::map<std::string, std::string> JSONParser::parse(std::string json){

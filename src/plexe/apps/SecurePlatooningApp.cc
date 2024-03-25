@@ -56,11 +56,12 @@ namespace plexe {
                 getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleLowerMsg: received a secure maneuver message");
                 std::string plaintext = handleSecureManeuverMessage(smm);
                 // getSimulation()->getEnvir()->alert(plaintext.c_str());
-                delete msg;
+                // delete msg;
             }
             // delete the frame if it is not needed
             delete frame;
-        } else {
+        } 
+        else {
             // getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleLowerMsg: received a non-maneuver message");
             // dispatch the message to the parent class
             BaseApp::handleLowerMsg(msg);

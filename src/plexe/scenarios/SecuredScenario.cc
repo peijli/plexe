@@ -31,10 +31,14 @@ namespace plexe {
 
         BaseScenario::initialize(stage);
 
-        if (stage == 0)
+        if (stage == 0){
             // get pointer to application
             appl = FindModule<SecurePlatooningApp*>::findSubModule(getParentModule());
-        if (stage == 2) {
+            // getSimulation()->getEnvir()->alert("SecuredScenario::initialize: stage 0");
+        // } else if (stage == 1) {
+        //     getSimulation()->getEnvir()->alert("SecuredScenario::initialize: stage 1");
+        } else if (stage == 2) {
+            // getSimulation()->getEnvir()->alert("SecuredScenario::initialize: stage 2");
             // average speed, convert from km/h to m/s
             leaderSpeed = par("leaderSpeed").doubleValue() / 3.6;
             // get the platoon formation as a vector
@@ -43,6 +47,9 @@ namespace plexe {
                 // set base cruising speed for the leader
                 plexeTraciVehicle->setCruiseControlDesiredSpeed(leaderSpeed);
                 // send out an encrypted message to the follower
+                encryptedCMessage = new cMessage("encryptedCMessage");
+                scheduleAt(simTime() + 20, encryptedCMessage);
+                getSimulation()->getEnvir()->alert("Scheduled an encrypted message to be sent out");
             } else {
                 // let the follower set a higher desired speed to stay connected
                 // to the leader when it is accelerating
@@ -52,7 +59,9 @@ namespace plexe {
     }
 
     void SecuredScenario::handleMessage(cMessage* msg) {
+        getSimulation()->getEnvir()->alert("SecuredScenario::handleMessage: received a message");
         if (msg == encryptedCMessage) {
+            getSimulation()->getEnvir()->alert("SecuredScenario::handleMessage: sending out an encrypted message");
             // send out an encrypted message to the last vehicle
             // appl->sendEncryptedMessage(formation[formation.size() - 1]);
             // formulate the message that contains some information about the sender vehicle
@@ -64,7 +73,11 @@ namespace plexe {
     }
 
     // define destructor
-    SecuredScenario::~SecuredScenario() {
+    // SecuredScenario::~SecuredScenario() {
+    //     cancelAndDelete(encryptedCMessage);
+    // }
+    void SecuredScenario::finish() {
         cancelAndDelete(encryptedCMessage);
     }
+ 
 } // namespace plexe

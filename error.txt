@@ -1,0 +1,75 @@
+make[1]: Entering directory '/d/cee_490_sim/plexe-3.1/src'
+plexe/apps/Example7App.cc
+plexe/scenarios/SimpleScenario.cc
+In file included from plexe/scenarios/SimpleScenario.cc:22:
+.\plexe/apps/Example7App.h:7:7: error: redefinition of 'Example7App'
+class Example7App : public plexe::BaseApp {
+      ^
+.\plexe/scenarios/SimpleScenario.h:26:10: note: '.\plexe/apps/Example7App.h' included multiple times, additional include site here
+#include "plexe/apps/Example7App.h"
+         ^
+plexe/scenarios/SimpleScenario.cc:22:10: note: '.\plexe/apps/Example7App.h' included multiple times, additional include site here
+#include "plexe/apps/Example7App.h"
+         ^
+.\plexe/apps/Example7App.h:7:7: note: unguarded header; consider using #ifdef guards or #pragma once
+class Example7App : public plexe::BaseApp {
+      ^
+1 error generated.
+plexe/apps/Example7App.cc:23:17: error: member access into incomplete type 'plexe::BaseProtocol'
+        protocol->registerApplication(
+                ^
+.\plexe/apps/BaseApp.h:34:7: note: forward declaration of 'plexe::BaseProtocol'
+class BaseProtocol;
+      ^
+make[1]: *** [Makefile:232: ../out/clang-release/src/plexe/scenarios/SimpleScenario.o] Error 1
+make[1]: *** Waiting for unfinished jobs....
+plexe/apps/Example7App.cc:31:38: error: use of undeclared identifier 'BaseScenario'
+        scenario = veins::FindModule<BaseScenario*>::findSubModule(getParentModule());
+                                     ^
+plexe/apps/Example7App.cc:31:51: error: expected expression
+        scenario = veins::FindModule<BaseScenario*>::findSubModule(getParentModule());
+                                                  ^
+plexe/apps/Example7App.cc:84:13: error: use of undeclared identifier 'handleAbandonPlatoon'
+            handleAbandonPlatoon(msg);
+            ^
+plexe/apps/Example7App.cc:87:13: error: use of undeclared identifier 'handleUpdatePlatoonFormation'; did you mean 'handleUpdatePlatoonFormationMessage'?
+            handleUpdatePlatoonFormation(msg);
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            handleUpdatePlatoonFormationMessage
+.\plexe/apps/Example7App.h:22:10: note: 'handleUpdatePlatoonFormationMessage' declared here
+    void handleUpdatePlatoonFormationMessage(UpdatePlatoonFormation* msg);
+         ^
+plexe/apps/Example7App.cc:96:19: error: out-of-line definition of 'handleAbandonMessage' does not match any declaration in 'Example7App'; did you mean 'handleAbandoonMessage'?
+void Example7App::handleAbandonMessage(AbandonPlatoon* msg) {
+                  ^~~~~~~~~~~~~~~~~~~~
+                  handleAbandoonMessage
+.\plexe/apps/Example7App.h:21:10: note: 'handleAbandoonMessage' declared here
+    void handleAbandoonMessage(AbandonPlatoon* msg);
+         ^
+plexe/apps/Example7App.cc:149:39: error: use of undeclared identifier 'platoonId'
+    newFormationMessage->setPlatoonId(platoonId);
+                                      ^
+plexe/apps/Example7App.cc:150:26: error: no member named 'setFormationArraySize' in 'UpdatePlatoonFormation'; did you mean 'setPlatoonFormationArraySize'?
+    newFormationMessage->setFormationArraySize(newPlatoonFormation.size());
+                         ^~~~~~~~~~~~~~~~~~~~~
+                         setPlatoonFormationArraySize
+.\plexe/messages/UpdatePlatoonFormation_m.h:77:18: note: 'setPlatoonFormationArraySize' declared here
+    virtual void setPlatoonFormationArraySize(size_t size);
+                 ^
+plexe/apps/Example7App.cc:152:30: error: no member named 'setFormation' in 'UpdatePlatoonFormation'
+        newFormationMessage->setFormation(i, newPlatoonFormation[i]);
+        ~~~~~~~~~~~~~~~~~~~  ^
+plexe/apps/Example7App.cc:160:30: error: no member named 'getFormationArraySize' in 'UpdatePlatoonFormation'; did you mean 'getPlatoonFormationArraySize'?
+    for (int i = 0; i < msg->getFormationArraySize(); i++) {
+                             ^~~~~~~~~~~~~~~~~~~~~
+                             getPlatoonFormationArraySize
+.\plexe/messages/UpdatePlatoonFormation_m.h:78:20: note: 'getPlatoonFormationArraySize' declared here
+    virtual size_t getPlatoonFormationArraySize() const;
+                   ^
+plexe/apps/Example7App.cc:161:37: error: no member named 'getFormation' in 'UpdatePlatoonFormation'
+        newFormation.push_back(msg->getFormation(i));
+                               ~~~  ^
+11 errors generated.
+make[1]: *** [Makefile:232: ../out/clang-release/src/plexe/apps/Example7App.o] Error 1
+make[1]: Leaving directory '/d/cee_490_sim/plexe-3.1/src'
+make: *** [Makefile:38: all] Error 2

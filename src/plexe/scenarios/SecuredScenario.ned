@@ -18,6 +18,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 
+// TODO: instrument the scenario to monitor initialization stages
+// TODO: try to get the encrypted messages to work
+
 package org.car2x.plexe.scenarios;
 
 import org.car2x.plexe.scenarios.BBaseScenario;

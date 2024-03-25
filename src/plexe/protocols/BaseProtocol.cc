@@ -274,36 +274,9 @@ void BaseProtocol::handleLowerMsg(cMessage* msg)
     ASSERT2(enc, "received a BaseFrame1609_4 with nothing inside");
 
     if (PlatooningBeacon* epkt = dynamic_cast<PlatooningBeacon*>(enc)) {
-
-        // if we're using multiple radios simultaneously, we might get duplicated beacons
-        if (isDuplicated(epkt)) {
-            duplicatedMessageReceived(epkt, frame);
-            delete frame;
-            return;
-        }
-        knownBeacons[epkt->getVehicleId()] = epkt->getSequenceNumber();
-
-        // invoke messageReceived() method of subclass
-        messageReceived(epkt, frame);
-
-        if (positionHelper->getLeaderId() == epkt->getVehicleId()) {
-            // check if this is at least the second message we have received
-            if (lastLeaderMsgTime.dbl() > 0) {
-                leaderDelayOut.record(simTime() - lastLeaderMsgTime);
-                leaderDelayIdOut.record(myId);
-            }
-            lastLeaderMsgTime = simTime();
-        }
-        if (positionHelper->getFrontId() == epkt->getVehicleId()) {
-            // check if this is at least the second message we have received
-            if (lastFrontMsgTime.dbl() > 0) {
-                frontDelayOut.record(simTime() - lastFrontMsgTime);
-                frontDelayIdOut.record(myId);
-            }
-            lastFrontMsgTime = simTime();
-        }
+        handleLowerPlatooningBeacon(epkt, frame);
     }
-
+    
     // find the application responsible for this beacon
     ApplicationMap::iterator app = apps.find(frame->getKind());
     if (app != apps.end() && app->second.size() != 0) {
@@ -314,6 +287,37 @@ void BaseProtocol::handleLowerMsg(cMessage* msg)
         }
     }
     delete frame;
+}
+
+void BaseProtocol::handleLowerPlatooningBeacon(PlatooningBeacon* epkt, BaseFrame1609_4* frame)
+{
+    // if we're using multiple radios simultaneously, we might get duplicated beacons
+    if (isDuplicated(epkt)) {
+        duplicatedMessageReceived(epkt, frame);
+        delete frame;
+        return;
+    }
+    knownBeacons[epkt->getVehicleId()] = epkt->getSequenceNumber();
+
+    // invoke messageReceived() method of subclass
+    messageReceived(epkt, frame);
+
+    if (positionHelper->getLeaderId() == epkt->getVehicleId()) {
+        // check if this is at least the second message we have received
+        if (lastLeaderMsgTime.dbl() > 0) {
+            leaderDelayOut.record(simTime() - lastLeaderMsgTime);
+            leaderDelayIdOut.record(myId);
+        }
+        lastLeaderMsgTime = simTime();
+    }
+    if (positionHelper->getFrontId() == epkt->getVehicleId()) {
+        // check if this is at least the second message we have received
+        if (lastFrontMsgTime.dbl() > 0) {
+            frontDelayOut.record(simTime() - lastFrontMsgTime);
+            frontDelayIdOut.record(myId);
+        }
+        lastFrontMsgTime = simTime();
+    }
 }
 
 void BaseProtocol::handleUpperMsg(cMessage* msg)

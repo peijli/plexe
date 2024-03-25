@@ -133,6 +133,7 @@ protected:
 
     // TODO: implement method and pass info to upper layer (bogus platooning) as it is (msg)
     virtual void handleLowerMsg(cMessage* msg) override;
+    void handleLowerPlatooningBeacon(PlatooningBeacon* epkt, BaseFrame1609_4* frame);
 
     // handle messages coming from above layers
     virtual void handleUpperMsg(cMessage* msg) override;

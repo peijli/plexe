@@ -151,8 +151,8 @@ namespace plexe {
         if (msg->getDestinationId() != positionHelper->getId())
             return "";
         // get the message properties
-        int platoonId = msg->getPlatoonId();
-        int vehicleId = msg->getVehicleId();
+        // int platoonId = msg->getPlatoonId();
+        // int vehicleId = msg->getVehicleId();
         std::string externalId = msg->getExternalId();
         std::string algorithm = msg->getAlgorithm();
         std::string encryptedData = msg->getEncryptedData();

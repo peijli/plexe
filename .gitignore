@@ -40,3 +40,4 @@ subprojects/**/examples/**/valgrind.out
 **/.Rhistory
 *.pdf
 .idea/
+src/cryptopp/

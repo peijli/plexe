@@ -6,6 +6,7 @@
 #include "veins/base/utils/FindModule.h"
 #include "plexe/messages/PlexeInterfaceControlInfo_m.h"
 #include "plexe/driver/PlexeRadioDriverInterface.h"
+#include "plexe/utilities/CryptoHelper.h"
 
 /*
 * TODO LIST
@@ -20,17 +21,20 @@ namespace plexe {
     Define_Module(SecurePlatooningApp);
 
     void SecurePlatooningApp::initialize(int stage){
-        // output to console the name of this app
-        getSimulation()->getEnvir()->alert(getParentModule()->getFullName());
-        getSimulation()->getEnvir()->alert("SecurePlatooningApp::initialize");
         BaseApp::initialize(stage);
-        // if(stage == 0){
-        //     scenario = FindModule<BaseScenario*>::findSubModule(getParentModule());
-        // }
+        if (stage != 0) {
+            // output to console the name of this app and the vehicle it is attached to
+            auto platoonId = positionHelper->getPlatoonId();
+            auto vehicleId = positionHelper->getId();
+            auto externalId = positionHelper->getExternalId();
+            // auto platoonFormation = positionHelper->getPlatoonFormation();
+            std::string msg = "SecurePlatooningApp::initialize: " + std::to_string(vehicleId) + " in platoon " + std::to_string(platoonId) + " with external ID " + externalId + " and stage " + std::to_string(stage);
+            getSimulation()->getEnvir()->alert(msg.c_str());
+        }
     }
 
     void SecurePlatooningApp::handleLowerMsg(cMessage* msg) {
-        getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleLowerMsg");
+        // getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleLowerMsg");
         BaseApp::handleLowerMsg(msg);
     }
 
@@ -41,7 +45,7 @@ namespace plexe {
      * @param destination the ID of the destination vehicle
      */
     void SecurePlatooningApp::sendUnicast(cPacket* msg, int destination) {
-        getSimulation()->getEnvir()->alert("SecurePlatooningApp::sendUnicast");
+        // getSimulation()->getEnvir()->alert("SecurePlatooningApp::sendUnicast");
         Enter_Method_Silent();
         take(msg);
         // encapsulate the message in a BaseFrame1609_4 and send it to the MAC layer

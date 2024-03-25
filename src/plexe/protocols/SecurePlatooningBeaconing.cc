@@ -16,12 +16,6 @@
 
 using namespace veins;
 
-// I think I have to overwrite a bunch of BaseApp methods...
-
-// TODO LIST
-// - [ ] Create different keys for each vehicle
-// - [ ] Implement symmetric key exchange between leader and followers
-
 namespace plexe {
 
 Define_Module(SecurePlatooningBeaconing)
@@ -41,15 +35,14 @@ void SecurePlatooningBeaconing::initialize(int stage)
         LOG << message.c_str() << endl;
         // initialize the shared key store
         sharedKeyStore = SharedKeyStore();
-        for (int i = 0; i < positionHelper->getPlatoonSize(); i++) {
+        auto platoonFormation = positionHelper->getPlatoonFormation();
+        for (auto i : platoonFormation) {
             sharedKeyStore.setSharedKey(i, std::numeric_limits<std::uint32_t>::max());
         }
         // broadcast the key to all other vehicles
-        for (int i = 0; i < positionHelper->getPlatoonSize(); i++) {
-            if (i != positionHelper->getId()) {
-                KeyExchangeMessage* kxm = createKeyExchangeMessage(i, false);
-                sendUnicast(kxm, i);
-            }
+        for (auto i : platoonFormation) {
+            KeyExchangeMessage* kxm = createKeyExchangeMessage(i);
+            sendUnicast(kxm, i);
         }
     }
 }
@@ -57,16 +50,22 @@ void SecurePlatooningBeaconing::initialize(int stage)
 void SecurePlatooningBeaconing::sendUnicast(cPacket* msg, int destination) {
     // create and send beacon
     auto wsm = veins::make_unique<BaseFrame1609_4>("", BEACON_TYPE);
-    wsm->setRecipientAddress(LAddress::L2BROADCAST());
+    // wsm->setRecipientAddress(LAddress::L2BROADCAST());
+    wsm->setRecipientAddress(destination);
     wsm->setChannelNumber(static_cast<int>(Channel::cch));
     wsm->setUserPriority(priority);
     wsm->encapsulate(msg);
-    sendTo(wsm.release(), PlexeRadioInterfaces::VEINS_11P);
+    sendTo(wsm.release(), PlexeRadioInterfaces::ALL);
 }
 
 void SecurePlatooningBeaconing::sendPlatooningMessage(int destinationAddress, enum PlexeRadioInterfaces interfaces) {
-    for (int i = 0; i < positionHelper->getPlatoonSize(); i++) {
-        sendTo(createBeacon(i).release(), interfaces);
+    // getSimulation()->getEnvir()->alert("Sending platooning message");
+
+    auto platoonFormation = positionHelper->getPlatoonFormation();
+    for (auto i : platoonFormation) {
+        LOG << "Sending platooning message to vehicle " << i << "from vehicle " << positionHelper->getId() << endl;
+        auto wsm = createBeacon(i);
+        sendTo(wsm.release(), interfaces);
     }
     
 }
@@ -222,7 +221,7 @@ PlatooningBeacon *SecurePlatooningBeaconing::handleSecurePlatooningBeacon(Secure
     }
 
     catch (...) {
-        getSimulation()->getEnvir()->alert("Error parsing decrypted map");
+        // getSimulation()->getEnvir()->alert("Error parsing decrypted map");
         LOG << "Falling back to using own vehicle data" << endl;
         // vehicle's data to be included in the message
         VEHICLE_DATA data;
@@ -253,7 +252,7 @@ PlatooningBeacon *SecurePlatooningBeaconing::handleSecurePlatooningBeacon(Secure
 std::map<std::string, std::string>* SecurePlatooningBeaconing::decryptBeacon(const SecurePlatooningBeacon* secureBeacon) {
     const char* decryptedChar = new char[secureBeacon->getEncryptedDataLength()];
     std::string decrypted = "";
-    std::string algorithm = secureBeacon->getAlgorithm();
+
 
     auto ciphertext = secureBeacon->getEncryptedData();
     auto size = secureBeacon->getEncryptedDataLength();
@@ -263,6 +262,7 @@ std::map<std::string, std::string>* SecurePlatooningBeaconing::decryptBeacon(con
 
     // select the right key!
     uint32_t keyToUse = sharedKeyStore.getSharedKey(secureBeacon->getVehicleId());
+    LOG << "Using key " << keyToUse << " for decryption" << endl;
 
     // check if we need to use the fallback key
     if (keyToUse == std::numeric_limits<std::uint32_t>::max()) {
@@ -305,13 +305,12 @@ void SecurePlatooningBeaconing::handleLowerMsg(cMessage* msg) {
 
     // check if packet is the SecurePlatooningBeacon type
     if (SecurePlatooningBeacon * secureBeacon = dynamic_cast<SecurePlatooningBeacon*>(enc)) {
-        // decrypt the beacon
-        PlatooningBeacon* beacon = handleSecurePlatooningBeacon(secureBeacon);
-        // handle the beacon as a normal PlatooningBeacon
-        if (beacon != nullptr) {
+        if (secureBeacon->getDestinationId() == positionHelper->getId()) {
+            // decrypt the beacon
+            PlatooningBeacon* beacon = handleSecurePlatooningBeacon(secureBeacon);
+            // handle the beacon as a normal PlatooningBeacon
             BaseProtocol::handleLowerPlatooningBeacon(beacon, frame);
         }
-        // dropAndDelete(secureBeacon);
         if (!frame) return;
     } else if (KeyExchangeMessage * beacon = dynamic_cast<KeyExchangeMessage*>(enc)) {
         // handle the key exchange message

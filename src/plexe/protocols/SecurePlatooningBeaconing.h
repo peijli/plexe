@@ -47,7 +47,7 @@ namespace plexe {
          * Sends a platooning message with all information about the car. This is an utility function for
          * subclasses
          */
-        void sendPlatooningMessage(int destinationAddress, enum PlexeRadioInterfaces interfaces = PlexeRadioInterfaces::ALL);
+        virtual void sendPlatooningMessage(int destinationAddress, enum PlexeRadioInterfaces interfaces = PlexeRadioInterfaces::ALL) override;
     public:
         SecurePlatooningBeaconing();
         virtual ~SecurePlatooningBeaconing();

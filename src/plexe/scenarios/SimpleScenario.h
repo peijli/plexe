@@ -22,7 +22,7 @@
 #define SIMPLESCENARIO_H_
 
 #include "plexe/scenarios/BaseScenario.h"
-#include "plexe/apps/BaseApp.h"
+// #include "plexe/apps/BaseApp.h"
 #include "plexe/apps/Example7App.h"
 
 namespace plexe {

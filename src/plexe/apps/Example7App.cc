@@ -1,12 +1,13 @@
 #include "plexe/apps/Example7App.h"
-#include "plexe/scenarios/BaseScenario.h"
+#include "plexe/protocols/BaseProtocol.h"
+// #include "plexe/scenarios/BaseScenario.h"
 #include "veins/modules/messages/BaseFrame1609_4_m.h"
 #include "veins/base/messages/MacPkt_m.h"
 #include "veins/modules/mac/ieee80211p/Mac1609_4.h"
 #include "veins/base/utils/FindModule.h"
 #include "plexe/messages/PlexeInterfaceControlInfo_m.h"
 #include "plexe/driver/PlexeRadioDriverInterface.h"
-#include "plexe/scenarios/BaseScenario.h"
+// #include "plexe/scenarios/BaseScenario.h"
 Define_Module(Example7App);
 
 using namespace veins;
@@ -28,7 +29,7 @@ void Example7App::initialize(int stage) {
             gate("lowerControlOut"));
         // register to the signal indicating failed unicast transmissions
         findHost()->subscribe(veins::Mac1609_4::sigRetriesExceeded, this);
-        scenario = veins::FindModule<BaseScenario*>::findSubModule(getParentModule());
+        scenario = veins::FindModule<plexe::BaseScenario*>::findSubModule(getParentModule());
     }
 }
 
@@ -81,10 +82,10 @@ void Example7App::handleLowerMsg(cMessage* msg) {
         ManeuverMessage* mm = check_and_cast<ManeuverMessage*>(
             frame->decapsulate());
         if (AbandonPlatoon* msg = dynamic_cast<AbandonPlatoon*>(mm)) {
-            handleAbandonPlatoon(msg);
+            handleAbandonMessage(msg);
             delete msg;
         } else if (UpdatePlatoonFormation* msg = dynamic_cast<UpdatePlatoonFormation*>(mm)) {
-            handleUpdatePlatoonFormation(msg);
+            handleUpdatePlatoonFormationMessage(msg);
             delete msg;
         }
         delete frame;
@@ -137,19 +138,26 @@ void Example7App::sendUpdatePlatoonFormationMessage(const std::vector<int>& newP
     int dest;
     for (int i = 0; i < newPlatoonFormation.size(); i++) {
         dest = newPlatoonFormation[i];
-        UpdatePlatoonFormation* newFormationMessage = newFormationMessage->dup();
-        newFormationMessage->setDestinationId(dest);
-        sendUnicast(newFormationMessage, dest);
+        UpdatePlatoonFormation* duplicate = newFormationMessage->dup();
+        duplicate->setDestinationId(dest);
+        sendUnicast(duplicate, dest);
     }
     delete newFormationMessage;
 }
 
 UpdatePlatoonFormation* Example7App::createUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation) {
     UpdatePlatoonFormation* newFormationMessage = new UpdatePlatoonFormation();
-    newFormationMessage->setPlatoonId(platoonId);
-    newFormationMessage->setFormationArraySize(newPlatoonFormation.size());
+    newFormationMessage->setPlatoonId(positionHelper->getPlatoonId());
+    newFormationMessage->setVehicleId(positionHelper->getId());
+    newFormationMessage->setExternalId(positionHelper->getExternalId().c_str());
+    newFormationMessage->setKind(MANEUVER_TYPE);
+    // attributes unique to UpdatePlatoonFormation
+    newFormationMessage->setPlatoonSpeed(positionHelper->getPlatoonSpeed());
+    newFormationMessage->setPlatoonLane(positionHelper->getPlatoonLane());
+    newFormationMessage->setPlatoonFormationArraySize(newPlatoonFormation.size());
+    // set the platoon formation entries one by one
     for (int i = 0; i < newPlatoonFormation.size(); i++) {
-        newFormationMessage->setFormation(i, newPlatoonFormation[i]);
+        newFormationMessage->setPlatoonFormation(i, newPlatoonFormation[i]);
     }
     return newFormationMessage;
 }
@@ -157,8 +165,8 @@ UpdatePlatoonFormation* Example7App::createUpdatePlatoonFormationMessage(const s
 void Example7App::handleUpdatePlatoonFormationMessage(UpdatePlatoonFormation* msg) {
     std::vector<int> newFormation;
     // retrieve the new formation from the message
-    for (int i = 0; i < msg->getFormationArraySize(); i++) {
-        newFormation.push_back(msg->getFormation(i));
+    for (int i = 0; i < msg->getPlatoonFormationArraySize(); i++) {
+        newFormation.push_back(msg->getPlatoonFormation(i));
     }
     positionHelper->setPlatoonFormation(newFormation);
 

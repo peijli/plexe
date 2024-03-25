@@ -27,18 +27,9 @@ to some incredibly valuable contributors:
 - Max Schettler
 - Christoph Sommer
 
-## Check out code
+## TODO list for 2/6
 
-1. Different maneuvers and their data requests
-2. messages/PlatooningBeacon
-3. plexe/mobility/CommandInterface -- Remember how to work with plexeTraciVehicle
-
-## Files and modules I should modify
-
-1. Implement new message types in plexe/messages
-   - Wait a second...
-   - How about changing up the actual communication protocol? Instead of re-implementing every single message type...
-   - Extend BaseProtocol or SimplePlatooningBeaconing classes to handle message encryption and decryption
-2. Extend the GeneralPlatooningApp to handle the new message types
-3. Maybe implement some of your encryption/decryption code in the utilities folder
+- [ ] Implement a working secured maneuver message
+- [ ] Try to create alternative vehicle beaconing messages
+- [ ] Sucessfully integrate the Crypto++ library
 

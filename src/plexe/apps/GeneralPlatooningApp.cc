@@ -260,6 +260,7 @@ namespace plexe {
             BaseFrame1609_4* frame = check_and_cast<BaseFrame1609_4*>(value);
             ManeuverMessage* mm = check_and_cast<ManeuverMessage*>(frame->getEncapsulatedPacket());
             if (frame) {
+                getSimulation()->getEnvir()->alert("GeneralPlatooningApp::receiveSignal: frame");
                 joinManeuver->onFailedTransmissionAttempt(mm);
                 mergeManeuver->onFailedTransmissionAttempt(mm);
             }

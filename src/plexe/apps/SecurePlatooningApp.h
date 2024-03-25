@@ -23,11 +23,7 @@ namespace plexe {
     //     void sendSecuredMessage(std::string message, int destination);
     protected:
         virtual void initialize(int stage) override;
-    //     virtual void handleLowerMsg(cMessage* msg) override;
+        virtual void handleLowerMsg(cMessage* msg) override;
     //     // plexe::BaseScenario* scenario;
-    private:
-    //     SecureManeuverMessage* createSecureManeuverMessage(std::string message, std::string algorithm);
-    //     std::string handleSecureManeuverMessage(SecureManeuverMessage* msg);
-    //     // std::string toString();
     };
 }

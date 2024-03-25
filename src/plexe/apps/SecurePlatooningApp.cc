@@ -27,6 +27,30 @@ namespace plexe {
         getSimulation()->getEnvir()->alert("SecurePlatooningApp::initialize");
     }
 
+    void SecurePlatooningApp::handleLowerMsg(cMessage* msg) {
+        veins::BaseFrame1609_4* frame = check_and_cast<veins::BaseFrame1609_4*>(msg);
+        cPacket* enc = frame->getEncapsulatedPacket();
+        ASSERT2(enc, "received a BaseFrame1609_4s with nothing inside");
+        
+        if (enc->getKind() == MANEUVER_TYPE) {
+            
+            LOG << "SecurePlatooningApp::handleLowerMsg: received a maneuver message at vehicle " << positionHelper->getId() << std::endl;
+            ManeuverMessage* mm = check_and_cast<ManeuverMessage*>(frame->decapsulate());
+            if (KeyExchangeMessage* kem = dynamic_cast<KeyExchangeMessage*>(mm)) {
+                LOG << "SecurePlatooningApp::handleLowerMsg: received a key exchange message at vehicle " << positionHelper->getId() << std::endl;
+                getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleLowerMsg: received a key exchange message");
+                // BaseApp::handleLowerMsg(msg);
+                // error("received unknown message type");
+                delete msg;
+                delete frame;
+            }
+        } 
+        else {
+            GeneralPlatooningApp::handleLowerMsg(msg);
+        }
+    }
+        
+
 //     void SecurePlatooningApp::handleLowerMsg(cMessage* msg) {
 //         // getSimulation()->getEnvir()->alert("SecurePlatooningApp::handleLowerMsg");
 //         veins::BaseFrame1609_4* frame = check_and_cast<veins::BaseFrame1609_4*>(msg);

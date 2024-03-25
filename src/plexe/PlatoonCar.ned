@@ -51,16 +51,19 @@ module PlatoonCar
                 @display("p=90,100");
         }
 
+        // I may want to redefine the application layer
         appl: <appl_type> like BaseApp {
             parameters:
                 @display("p=60,100");
         }
 
+        // I may want to redefine the protocol
         prot: <protocol_type> like BaseProtocol {
             parameters:
                 @display("p=60,200");
         }
 
+        // I may want to redefine the radio driver
         veins11pDriver: Veins11pRadioDriver {
             parameters:
                 @display("p=60,200");
@@ -75,6 +78,8 @@ module PlatoonCar
             parameters:
                 @display("p=130,172;i=block/cogwheel");
         }
+
+    // TODO: how is the connection between the modules defined?
     connections allowunconnected:
         nic.upperLayerIn <-- veins11pDriver.lowerLayerOut;
         nic.upperLayerOut --> veins11pDriver.lowerLayerIn;

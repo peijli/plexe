@@ -73,10 +73,11 @@ void GeneralPlatooningApp::handleSelfMsg(cMessage* msg)
     BaseApp::handleSelfMsg(msg);
 }
 
-bool GeneralPlatooningApp::isJoinAllowed() const
-{
-    return ((role == PlatoonRole::LEADER || role == PlatoonRole::NONE) && !inManeuver);
-}
+    bool GeneralPlatooningApp::isJoinAllowed() const {\
+        // return true if the vehicle is not in a maneuver
+        // and is a leader or not in a platoon
+        return ((role == PlatoonRole::LEADER || role == PlatoonRole::NONE) && !inManeuver);
+    }
 
 double GeneralPlatooningApp::getStandstillDistance(enum ACTIVE_CONTROLLER controller)
 {

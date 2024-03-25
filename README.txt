@@ -26,3 +26,11 @@ Julian Heinovski
 Stefan Joerer
 Max Schettler
 Christoph Sommer
+
+***TODO LIST FOR FEB 3***
+1. Go through Plexe API tutorial http://plexe.car2x.org/tutorial/example7/
+2. Go through Plexe API documentation http://plexe.car2x.org/api/
+3. Go through Plexe module documentation http://plexe.car2x.org/documentation/
+4. Go through Plexe car tutorial http://plexe.car2x.org/tutorial/example5/
+5. Work on modifying the basic protocol
+6. Think about how to demonstrate work on Tuesday

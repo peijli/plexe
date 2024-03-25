@@ -32,4 +32,8 @@ fi
 # Add Plexe directory to PATH
 export PLEXE_DIR="$(pwd)"
 export PATH="$PATH":"$PLEXE_DIR/bin"
-
+# export PATH="$PATH":/usr/local/include/cryptopp/
+# C_INCLUDE_PATH="/usr/local/include/cryptopp/:$C_INCLUDE_PATH" ## for C compiler
+# CPLUS_INCLUDE_PATH="/usr/local/include/cryptopp/:$CPLUS_INCLUDE_PATH" ## for Cpp compiler
+# export C_INCLUDE_PATH
+# export CPLUS_INCLUDE_PATH

@@ -13,7 +13,8 @@
 
 #include "plexe/mobility/CommandInterface.h"
 #include "plexe/utilities/BasePositionHelper.h"
-
+#include "plexe/utilities/SharedKeyStore.h"
+#include "plexe/messages/KeyExchangeMessage_m.h"
 #include "plexe/driver/PlexeRadioDriverInterface.h"
 
 #include <memory>
@@ -24,22 +25,29 @@ namespace plexe {
     private:
         // TODO: write this key to the plexe TraCI vehicle interface
         std::uint32_t symmetricKey;
+        std::uint32_t dummySharedSecret;
         std::uint32_t privateKey; // for Diffie-Hellman key exchange
         std::uint32_t publicKey; // for Diffie-Hellman key exchange
+        SharedKeyStore sharedKeyStore; // for storing shared keys if the vehicle is a leader
         // overloaded method to check for duplicated secure beacons
         bool isDuplicated(const SecurePlatooningBeacon* beacon);
         // returns a SecurePlatooningBeacon from a PlatooningBeacon
         SecurePlatooningBeacon* encryptBeacon(const PlatooningBeacon* beacon);
-        // returns a decrypted and parsed beacon from received SecurePlatooningBeacon
-        PlatooningBeacon* decryptBeacon(const SecurePlatooningBeacon* beacon);
+        KeyExchangeMessage* createKeyExchangeMessage(int destinationAddress);
+        virtual void sendUnicast(cPacket* msg, int destination);
+        void handleKeyExchangeMessage(KeyExchangeMessage* msg);
     protected:
         virtual void handleSelfMsg(cMessage* msg) override;
         virtual std::unique_ptr<BaseFrame1609_4> createBeacon(int destinationAddress) override;
         virtual void handleLowerMsg(cMessage* msg) override;
+        // returns a decrypted and parsed beacon from received SecurePlatooningBeacon
+        PlatooningBeacon* handleSecurePlatooningBeacon(SecurePlatooningBeacon* beacon);
+        std::map<std::string, std::string>* decryptBeacon(const SecurePlatooningBeacon* beacon);
     public:
         SecurePlatooningBeaconing();
         virtual ~SecurePlatooningBeaconing();
         virtual void initialize(int stage) override;
+        int getSymmetricKey() { return symmetricKey; }
     };
 } // namespace plexe
 

@@ -1,5 +1,6 @@
 #include "plexe/apps/SecurePlatooningApp.h"
-#include "plexe/protocols/BaseProtocol.h"
+// #include "plexe/protocols/BaseProtocol.h"
+#include "plexe/protocols/SecurePlatooningBeaconing.h"
 #include "veins/modules/messages/BaseFrame1609_4_m.h"
 #include "veins/base/messages/MacPkt_m.h"
 #include "veins/modules/mac/ieee80211p/Mac1609_4.h"
@@ -73,7 +74,6 @@ namespace plexe {
      * @param destination the ID of the destination vehicle
      */
     void SecurePlatooningApp::sendUnicast(cPacket* msg, int destination) {
-        // getSimulation()->getEnvir()->alert("SecurePlatooningApp::sendUnicast");
         Enter_Method_Silent();
         take(msg);
         // encapsulate the message in a BaseFrame1609_4 and send it to the MAC layer
@@ -88,7 +88,6 @@ namespace plexe {
         frame->setControlInfo(controlInfo);
         // push the frame down to the MAC layer
         sendDown(frame);
-        // getSimulation()->getEnvir()->alert("SecurePlatooningApp::sendUnicast: sent a message");
     }
 
     /**

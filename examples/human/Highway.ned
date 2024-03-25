@@ -22,10 +22,4 @@
 import org.car2x.plexe.PlexeScenario;
 
 network Highway extends PlexeScenario
-{
-
-    submodules:
-        human[0]: HumanCar {
-        }
-
-}
+{}

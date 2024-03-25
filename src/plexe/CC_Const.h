@@ -60,8 +60,13 @@ enum ACTIVE_CONTROLLER {
     FAKED_CACC = 3,
     PLOEG = 4,
     CONSENSUS = 5,
-    FLATBED = 6
+    FLATBED = 6,
+    // MYCC = 7
 };
+
+// for Plexe tutorial 2 on http://plexe.car2x.org/tutorial/example2/
+// #define CC_PAR_MYCC_KD "ccmykd"  //k_d constant for new controller
+// #define CC_PAR_MYCC_KS "ccmyks"  //k_s constant for new controller
 
 /**
  * @brief struct used as header for generic data passing to this model through
@@ -199,9 +204,6 @@ struct VEHICLE_DATA {
 
 // let the leader automatically change lane for the whole platoon if there is a speed advantage
 #define PAR_ENABLE_AUTO_LANE_CHANGE (parameter_prefix + "ccalc")
-
-// perform a lane change for a whole platoon
-#define PAR_PLATOON_FIXED_LANE (parameter_prefix + "ccpfl")
 
 } // namespace plexe
 

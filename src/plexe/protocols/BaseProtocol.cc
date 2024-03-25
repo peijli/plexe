@@ -275,6 +275,7 @@ void BaseProtocol::handleLowerMsg(cMessage* msg)
 
     if (PlatooningBeacon* epkt = dynamic_cast<PlatooningBeacon*>(enc)) {
         handleLowerPlatooningBeacon(epkt, frame);
+        if (!frame) return;
     }
     
     // find the application responsible for this beacon
@@ -295,6 +296,7 @@ void BaseProtocol::handleLowerPlatooningBeacon(PlatooningBeacon* epkt, BaseFrame
     if (isDuplicated(epkt)) {
         duplicatedMessageReceived(epkt, frame);
         delete frame;
+        frame = nullptr;
         return;
     }
     knownBeacons[epkt->getVehicleId()] = epkt->getSequenceNumber();

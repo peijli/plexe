@@ -19,7 +19,7 @@ namespace plexe {
         static bool verify(std::string message, std::string signature, std::string publicKey);
         static std::string hexToString(std::string hex);
         static std::string stringToHex(std::string str);
-        static std::string generateSymmetricKey();
+        static std::string generateSymmetricKey(bool random = false);
     };
 }
 

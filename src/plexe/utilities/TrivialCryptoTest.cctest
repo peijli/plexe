@@ -9,11 +9,7 @@
 #include "StringHelper.h"
 using namespace plexe;
 
-int main() {
-    std::string plaintext = "Hello, world!";
-    std::string key = CryptoHelper::generateSymmetricKey();
-    std::cout << "key: " << key << std::endl;
-
+void testSamplePayload(std::string key) {
     std::string samplePayload = "{\"acceleration\":\"-1.092790\",\"angle\":\"0.000000\",\"controllerAcceleration\":\"-0.791758\",\"length\":\"4.000000\",\"positionX\":\"106.326000\",\"positionY\":\"242.450000\",\"speed\":\"1.859140\",\"speedX\":\"1.859140\",\"speedY\":\"0.000000\",\"time\":\"6.860000\",\"vehicleId\":\"4\"}";
     std::cout << "samplePayload: " << samplePayload << std::endl;
 
@@ -32,10 +28,18 @@ int main() {
     std::cout << "encrypted strlen: " << strlen(encrypted) << std::endl;
     // char* decryptedChar = CryptoHelper::symmetricDecrypt(encrypted, dataLength, key);
     char* encryptedCopy = StringHelper::customDeepCopy(encrypted, dataLength);
-    
+
     std::string encryptedCopyStr = StringHelper::customCharToString(encryptedCopy, dataLength);
     std::string decryptedString = CryptoHelper::symmetricDecrypt(encryptedCopyStr, key);
     std::cout << "decryptedString: " << decryptedString << std::endl;
+}
 
+int main() {
+    std::string plaintext = "Hello, world!";
+    std::string key = CryptoHelper::generateSymmetricKey();
+    std::cout << "key: " << key << std::endl;
+    std::string randomKey = CryptoHelper::generateSymmetricKey(true);
+    std::cout << "randomKey: " << randomKey << std::endl;
+    testSamplePayload(randomKey);
     return 0;
 }

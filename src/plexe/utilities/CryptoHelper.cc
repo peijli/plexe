@@ -17,13 +17,7 @@
 #include <cstddef>
 #include <cassert>
 #include <cmath>
-
-// TODO: for 3/3
-// [x] Implement key exchange
-// [ ] Implement data structure for storing shared keys between leader and each follower
-// [ ] Implement plexe message for sharing keys
-// [ ] Implement symmetric key exchange between leader and followers
-// [ ] Test implementation
+#include "sha256.h"
 
 namespace plexe {
     /** Trivial implementation of a symmetric encryption algorithm
@@ -142,5 +136,14 @@ namespace plexe {
             result *= base;
         }
         return result;
+    }
+
+    std::string CryptoHelper::computeMAC(std::string message, std::uint32_t key) {
+        return sha256(std::to_string(key) + message);
+    }
+
+    bool CryptoHelper::verifyMAC(std::string message, std::string mac, std::uint32_t key) {
+        std::string expectedMAC = computeMAC(message, key);
+        return expectedMAC == mac;
     }
 }

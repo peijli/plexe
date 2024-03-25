@@ -37,18 +37,13 @@ void SecurePlatooningBeacon::copy(const SecurePlatooningBeacon& other) {
         buffer[i] = otherBuffer[i];
     }
     encryptedDataLength = other.encryptedDataLength;
-    buffer = this->signature.reserve(other.signatureLength);
-    otherBuffer = other.signature.c_str();
-    for (int i = 0; i < other.signatureLength; i++) {
+
+    buffer = this->mac.reserve(other.macLength);
+    otherBuffer = other.mac.c_str();
+    for (int i = 0; i < other.macLength; i++) {
         buffer[i] = otherBuffer[i];
     }
-    signatureLength = other.signatureLength;
-    buffer = this->publicKey.reserve(other.publicKeyLength);
-    otherBuffer = other.publicKey.c_str();
-    for (int i = 0; i < other.publicKeyLength; i++) {
-        buffer[i] = otherBuffer[i];
-    }
-    publicKeyLength = other.publicKeyLength;
+
     // we don't need to deep copy the algorithm, as it is a constant string
     algorithm = other.algorithm;
 }
@@ -60,19 +55,6 @@ void SecurePlatooningBeacon::setEncryptedData(const char* encryptedData) {
     }
 }
 
-void SecurePlatooningBeacon::setSignature(const char* signature) {
-    char* buffer = this->signature.reserve(signatureLength);
-    for (int i = 0; i < signatureLength; i++) {
-        buffer[i] = signature[i];
-    }
-}
-
-void SecurePlatooningBeacon::setPublicKey(const char* publicKey) {
-    char* buffer = this->publicKey.reserve(publicKeyLength);
-    for (int i = 0; i < publicKeyLength; i++) {
-        buffer[i] = publicKey[i];
-    }
-}
 
 void SecurePlatooningBeacon::setEncryptedData(const char* encryptedData, int length) {
     this->encryptedDataLength = length;
@@ -82,44 +64,27 @@ void SecurePlatooningBeacon::setEncryptedData(const char* encryptedData, int len
     }
 }
 
-void SecurePlatooningBeacon::setSignature(const char* signature, int length) {
-    this->signatureLength = length;
-    char* buffer = this->signature.reserve(length);
-    for (int i = 0; i < length; i++) {
-        buffer[i] = signature[i];
-    }
-}
-
-void SecurePlatooningBeacon::setPublicKey(const char* publicKey, int length) {
-    this->publicKeyLength = length;
-    char* buffer = this->publicKey.reserve(length);
-    for (int i = 0; i < length; i++) {
-        buffer[i] = publicKey[i];
-    }
-}
 
 const char * SecurePlatooningBeacon::getEncryptedData() const {
     return plexe::StringHelper::customDeepCopy(this->encryptedData.c_str(), encryptedDataLength);
 }
 
-const char * SecurePlatooningBeacon::getSignature() const {
-    return plexe::StringHelper::customDeepCopy(this->signature.c_str(), signatureLength);
-}
-
-const char * SecurePlatooningBeacon::getPublicKey() const {
-    return plexe::StringHelper::customDeepCopy(this->publicKey.c_str(), publicKeyLength);
-}
-
-std::uint32_t SecurePlatooningBeacon::getPublicKeyAsInt() const {
-    return std::stoul(this->publicKey.c_str());
-}
-
-void SecurePlatooningBeacon::setPublicKey(std::uint32_t publicKey) {
-    std::string publicKeyStr = std::to_string(publicKey);
-    this->publicKeyLength = publicKeyStr.length();
-    char* buffer = this->publicKey.reserve(publicKeyStr.length());
-    for (int i = 0; i < publicKeyStr.length(); i++) {
-        buffer[i] = publicKeyStr[i];
+void SecurePlatooningBeacon::setMAC(const char* mac, int length) {
+    this->macLength = length;
+    char* buffer = this->mac.reserve(length);
+    for (int i = 0; i < length; i++) {
+        buffer[i] = mac[i];
     }
 }
 
+void SecurePlatooningBeacon::setMAC(std::string mac) {
+    this->macLength = mac.length();
+    char* buffer = this->mac.reserve(macLength);
+    for (int i = 0; i < macLength; i++) {
+        buffer[i] = mac[i];
+    }
+}
+
+const char * SecurePlatooningBeacon::getMAC() const {
+    return plexe::StringHelper::customDeepCopy(this->mac.c_str(), macLength);
+}

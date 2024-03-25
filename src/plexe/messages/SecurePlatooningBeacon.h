@@ -38,15 +38,10 @@ public:
     // override getter/setter functions for opp_string data types
     virtual void setEncryptedData(const char* encryptedData) override;
     virtual const char * getEncryptedData() const override;
-    virtual void setSignature(const char* signature) override;
-    virtual const char * getSignature() const override;
-    virtual void setPublicKey(const char* publicKey) override;
-    virtual const char * getPublicKey() const override;
-    std::uint32_t getPublicKeyAsInt() const;
     void setEncryptedData(const char* encryptedData, int length);
-    void setSignature(const char* signature, int length);
-    void setPublicKey(const char* publicKey, int length);
-    void setPublicKey(std::uint32_t publicKey);
+    void setMAC(const char* mac, int length);
+    void setMAC(std::string mac);
+    const char * getMAC() const;
 };
 
 #endif

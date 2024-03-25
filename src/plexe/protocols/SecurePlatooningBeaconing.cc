@@ -13,6 +13,8 @@
 #include "plexe/driver/Veins11pRadioDriver.h"
 #include "plexe/messages/PlexeInterfaceControlInfo_m.h"
 
+// Still bugs in scheduling keyExchangeMsg
+// Look towards similar self messages in SimplePlatooningBeaconing.cc for guidance
 
 using namespace veins;
 
@@ -35,15 +37,13 @@ void SecurePlatooningBeaconing::initialize(int stage)
         LOG << message.c_str() << endl;
         // initialize the shared key store
         sharedKeyStore = SharedKeyStore();
-        cMessage *keyExchangeMsg = new cMessage("keyExchangeMsg");
-        for (int i = 0; i < 10; i++) {
-            scheduleAt(simTime() + 0.01 + 10 * i, keyExchangeMsg);
-        }
-        // keyExchange();
+        this->keyExchangeMsg = new cMessage("keyExchangeMsg");
+        keyExchange(keyExchangeMsg);
+        // scheduleAt(simTime() + 10, keyExchangeMsg);
     }
 }
 
-void SecurePlatooningBeaconing::keyExchange() {
+void SecurePlatooningBeaconing::keyExchange(cMessage * msg) {
     privateKey = CryptoHelper::generateSymmetricKey(true);
     auto platoonFormation = positionHelper->getPlatoonFormation();
     for (auto i : platoonFormation) {
@@ -54,6 +54,7 @@ void SecurePlatooningBeaconing::keyExchange() {
         KeyExchangeMessage* kxm = createKeyExchangeMessage(i);
         sendUnicast(kxm, i);
     }
+    scheduleAt(simTime() + 10, msg);
 }
 
 void SecurePlatooningBeaconing::sendUnicast(cPacket* msg, int destination) {
@@ -99,11 +100,11 @@ KeyExchangeMessage* SecurePlatooningBeaconing::createKeyExchangeMessage(int dest
 
 void SecurePlatooningBeaconing::handleSelfMsg(cMessage* msg)
 {
-    if (msg->isName("keyExchangeMsg")) {
+    if (msg == keyExchangeMsg) {
         // print vehicle id and time of key exchange
         std::string message = "Vehicle " + std::to_string(positionHelper->getId()) + " is performing key exchange at time " + std::to_string(simTime().dbl());
         getSimulation()->getEnvir()->alert(message.c_str());
-        keyExchange();
+        keyExchange(this->keyExchangeMsg);
     }
     SimplePlatooningBeaconing::handleSelfMsg(msg);
 }

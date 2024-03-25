@@ -1,5 +1,6 @@
 #include <map>
 #include <cassert>
+#include <limits>
 #include "SecurePlatooningBeaconing.h"
 #include "plexe/utilities/CryptoHelper.h"
 #include "plexe/utilities/JSONParser.h"
@@ -30,8 +31,10 @@ void SecurePlatooningBeaconing::initialize(int stage)
     SimplePlatooningBeaconing::initialize(stage);
     if (stage == 0) {
         // generate encryption key
-        symmetricKey = CryptoHelper::generateSymmetricKey(false);
+        fallbackKey = CryptoHelper::generateSymmetricKey(false);
         privateKey = CryptoHelper::generateSymmetricKey(true);
+        // initialize symmetric key to the maximum value
+        symmetricKey = std::numeric_limits<std::uint32_t>::max();
     }
     if (stage == 1) {
         std::string message = "Vehicle " + std::to_string(positionHelper->getId()) + " has symmetric key " + std::to_string(privateKey);
@@ -46,6 +49,10 @@ void SecurePlatooningBeaconing::initialize(int stage)
                     KeyExchangeMessage* kxm = createKeyExchangeMessage(followerID);
                     sendUnicast(kxm, followerID);
                 }
+            }
+            // initialize the shared key store
+            for (int i = 0; i < positionHelper->getPlatoonSize(); i++) {
+                sharedKeyStore.setSharedKey(positionHelper->getMemberId(i), std::numeric_limits<std::uint32_t>::max());
             }
         }
     }
@@ -152,14 +159,26 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
     int dataLength = static_cast<int>(json.length());
     LOG << "Message with sequence number " << beacon->getSequenceNumber() << " from vehicle " << myId << " to vehicle " << beacon->getVehicleId() << " is being encrypted." << endl;
     LOG << "Payload: " << json << endl;
-    char* encrypted = CryptoHelper::symmetricEncrypt(json.c_str(), dataLength, symmetricKey);
+
+    uint32_t keyToUse;
+    // select the right key!
+    if (positionHelper->isLeader()) {
+        keyToUse = sharedKeyStore.getSharedKey(beacon->getVehicleId());
+    } else {
+        keyToUse = symmetricKey;
+    }
+    // check if we need to use the fallback key
+    if (keyToUse == std::numeric_limits<std::uint32_t>::max()) {
+        keyToUse = fallbackKey;
+        LOG << "Using a fallback key" << endl;
+    }
+    LOG << "Using key " << keyToUse << " for encryption" << endl;
+    char * encrypted = CryptoHelper::symmetricEncrypt(
+        json.c_str(), dataLength, keyToUse);
+
     LOG << "Encrypted message: " << encrypted << endl;
     secureBeacon->setEncryptedData(encrypted, dataLength);
     secureBeacon->setAlgorithm("AES");
-
-    // Use the plaintext for testing
-    // secureBeacon->setEncryptedData(json.c_str(), dataLength);
-    // secureBeacon->setAlgorithm("plaintext");
 
     // set the properties of the secure beacon
     secureBeacon->setKind(BEACON_TYPE);
@@ -171,6 +190,9 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
 }
 
 PlatooningBeacon *SecurePlatooningBeaconing::handleSecurePlatooningBeacon(SecurePlatooningBeacon* secureBeacon) {
+    // if (secureBeacon->getDestinationId() != myId) {
+    //     return nullptr;
+    // }
     LOG << "Message with sequence number " << secureBeacon->getSequenceNumber() << " from vehicle " << secureBeacon->getVehicleId() << " to vehicle " << myId << " is being decrypted." << endl;
     LOG << "Encrypted message: " << secureBeacon->getEncryptedData() << endl;
     // decrypt the beacon
@@ -178,20 +200,46 @@ PlatooningBeacon *SecurePlatooningBeaconing::handleSecurePlatooningBeacon(Secure
     // create a PlatooningBeacon object
     PlatooningBeacon* beacon = new PlatooningBeacon();
     // set the properties of the beacon
-    beacon->setVehicleId(std::stoi(map->at("vehicleId")));
-    beacon->setControllerAcceleration(std::stod(map->at("controllerAcceleration")));
-    beacon->setAcceleration(std::stod(map->at("acceleration")));
-    beacon->setSpeed(std::stod(map->at("speed")));
-    beacon->setPositionX(std::stod(map->at("positionX")));
-    beacon->setPositionY(std::stod(map->at("positionY")));
-    beacon->setTime(std::stod(map->at("time")));
-    beacon->setLength(std::stod(map->at("length")));
-    beacon->setSpeedX(std::stod(map->at("speedX")));
-    beacon->setSpeedY(std::stod(map->at("speedY")));
-    beacon->setAngle(std::stod(map->at("angle")));
-    beacon->setSequenceNumber(secureBeacon->getSequenceNumber());
-    beacon->setKind(BEACON_TYPE);
-    beacon->setByteLength(secureBeacon->getByteLength());
+    try {
+        beacon->setVehicleId(std::stoi(map->at("vehicleId")));
+        beacon->setControllerAcceleration(std::stod(map->at("controllerAcceleration")));
+        beacon->setAcceleration(std::stod(map->at("acceleration")));
+        beacon->setSpeed(std::stod(map->at("speed")));
+        beacon->setPositionX(std::stod(map->at("positionX")));
+        beacon->setPositionY(std::stod(map->at("positionY")));
+        beacon->setTime(std::stod(map->at("time")));
+        beacon->setLength(std::stod(map->at("length")));
+        beacon->setSpeedX(std::stod(map->at("speedX")));
+        beacon->setSpeedY(std::stod(map->at("speedY")));
+        beacon->setAngle(std::stod(map->at("angle")));
+        beacon->setSequenceNumber(secureBeacon->getSequenceNumber());
+        beacon->setKind(BEACON_TYPE);
+        beacon->setByteLength(secureBeacon->getByteLength());
+    }
+
+    catch (...) {
+        getSimulation()->getEnvir()->alert("Error parsing decrypted map");
+        LOG << "Falling back to using own vehicle data" << endl;
+        // vehicle's data to be included in the message
+        VEHICLE_DATA data;
+        // get information about the vehicle via traci
+        plexeTraciVehicle->getVehicleData(&data);
+        beacon->setVehicleId(myId);
+        beacon->setControllerAcceleration(data.u);
+        beacon->setAcceleration(data.acceleration);
+        beacon->setSpeed(data.speed);
+        beacon->setPositionX(data.positionX);
+        beacon->setPositionY(data.positionY);
+        beacon->setTime(data.time);
+        beacon->setLength(length);
+        beacon->setSpeedX(data.speedX);
+        beacon->setSpeedY(data.speedY);
+        beacon->setAngle(data.angle);
+        beacon->setSequenceNumber(secureBeacon->getSequenceNumber());
+        beacon->setKind(BEACON_TYPE);
+        beacon->setByteLength(secureBeacon->getByteLength());
+    }
+    
     // return the beacon
     delete map;
     return beacon;
@@ -202,42 +250,56 @@ std::map<std::string, std::string>* SecurePlatooningBeaconing::decryptBeacon(con
     const char* decryptedChar = new char[secureBeacon->getEncryptedDataLength()];
     std::string decrypted = "";
     std::string algorithm = secureBeacon->getAlgorithm();
-    if (algorithm == "AES") {
-        decryptedChar = CryptoHelper::symmetricDecrypt(
-            secureBeacon->getEncryptedData(), 
-            secureBeacon->getEncryptedDataLength(), 
-            symmetricKey);
-    } else { // assume plaintext
-        decryptedChar = secureBeacon->getEncryptedData();
-    }
-    decrypted = std::string(decryptedChar, secureBeacon->getEncryptedDataLength());
-    // convert the JSON string to a map
-    LOG << "Decrypted message: " << decrypted << endl;
+    // if (algorithm == "AES") {
+    //     decryptedChar = CryptoHelper::symmetricDecrypt(
+    //         secureBeacon->getEncryptedData(), 
+    //         secureBeacon->getEncryptedDataLength(), 
+    //         fallbackKey);
+    // } else { // assume plaintext
+    //     decryptedChar = secureBeacon->getEncryptedData();
+    // }
+
+    auto ciphertext = secureBeacon->getEncryptedData();
+    auto size = secureBeacon->getEncryptedDataLength();
 
     // try to parse the decrypted message
     std::map<std::string, std::string>* map = new std::map<std::string, std::string>();
+
+    // select the right key!
+    uint32_t keyToUse;
+    if (positionHelper->isLeader()) {
+        keyToUse = sharedKeyStore.getSharedKey(secureBeacon->getVehicleId());
+    } else {
+        keyToUse = symmetricKey;
+    }
+
+    // check if we need to use the fallback key
+    if (keyToUse == std::numeric_limits<std::uint32_t>::max()) {
+        keyToUse = fallbackKey;
+        LOG << "Using a fallback key" << endl;
+    }
+
     try {
+        decryptedChar = CryptoHelper::symmetricDecrypt(ciphertext, size, keyToUse);
+        decrypted = std::string(decryptedChar, secureBeacon->getEncryptedDataLength());
+        // convert the JSON string to a map
+        LOG << "Decrypted message: " << decrypted << endl;
         *map = JSONParser::parse(decrypted);
     } 
 
     catch (...) {
+        getSimulation()->getEnvir()->alert("Error parsing decrypted message");
         LOG << "Error parsing decrypted message" << endl;
-        LOG << "Falling back to using own vehicle data" << endl;
-        // vehicle's data to be included in the message
-        VEHICLE_DATA data;
-        // get information about the vehicle via traci
-        plexeTraciVehicle->getVehicleData(&data);
-        map->at("vehicleId") = std::to_string(myId);
-        map->at("controllerAcceleration") = std::to_string(data.u);
-        map->at("acceleration") = std::to_string(data.acceleration);
-        map->at("speed") = std::to_string(data.speed);
-        map->at("positionX") = std::to_string(data.positionX);
-        map->at("positionY") = std::to_string(data.positionY);
-        map->at("time") = std::to_string(data.time);
-        map->at("length") = std::to_string(length);
-        map->at("speedX") = std::to_string(data.speedX);
-        map->at("speedY") = std::to_string(data.speedY);
-        map->at("angle") = std::to_string(data.angle);
+        LOG << "Using fallback key" << endl;
+        decryptedChar = CryptoHelper::symmetricDecrypt(ciphertext, size, fallbackKey);
+        decrypted = std::string(decryptedChar, secureBeacon->getEncryptedDataLength());
+        // convert the JSON string to a map
+        try {
+            *map = JSONParser::parse(decrypted);
+        } catch (...) {
+            getSimulation()->getEnvir()->alert("Error parsing decrypted message*2");
+            LOG << "Error parsing decrypted message" << endl;
+        }
     }
     return map;
 }
@@ -255,7 +317,9 @@ void SecurePlatooningBeaconing::handleLowerMsg(cMessage* msg) {
         // decrypt the beacon
         PlatooningBeacon* beacon = handleSecurePlatooningBeacon(secureBeacon);
         // handle the beacon as a normal PlatooningBeacon
-        BaseProtocol::handleLowerPlatooningBeacon(beacon, frame);
+        if (beacon != nullptr) {
+            BaseProtocol::handleLowerPlatooningBeacon(beacon, frame);
+        }
         // dropAndDelete(secureBeacon);
         if (!frame) return;
     } else if (KeyExchangeMessage * beacon = dynamic_cast<KeyExchangeMessage*>(enc)) {
@@ -292,15 +356,20 @@ void SecurePlatooningBeaconing::handleKeyExchangeMessage(KeyExchangeMessage* msg
     if (positionHelper->isLeader()) {
         // store the shared key in the shared key store
         sharedKeyStore.setSharedKey(msg->getVehicleId(), sharedSecret);
-        std::string message = "Leader stored shared secret with vehicle " + std::to_string(msg->getVehicleId()) + "as " + std::to_string(sharedSecret);
+        std::string message = "Leader stored shared secret with vehicle " + std::to_string(msg->getVehicleId()) + " as " + std::to_string(sharedSecret);
         getSimulation()->getEnvir()->alert(message.c_str());
+        // FOR DEBUGGING ONLY
+        // symmetricKey = fallbackKey;
+        // sharedKeyStore.setSharedKey(msg->getVehicleId(), fallbackKey);
     } else {
-        dummySharedSecret = sharedSecret;
+        symmetricKey = sharedSecret;
         std::string message = "Follower " + std::to_string(positionHelper->getId()) + " stored shared secret with leader as " + std::to_string(sharedSecret);
         getSimulation()->getEnvir()->alert(message.c_str());
         // send a key exchange message to the leader
         KeyExchangeMessage* kxm = createKeyExchangeMessage(positionHelper->getLeaderId());
         sendUnicast(kxm, positionHelper->getLeaderId());
+        // FOR DEBUGGING ONLY
+        // symmetricKey = fallbackKey;
     }
 }
 

@@ -16,6 +16,7 @@
 #include <limits>
 #include <cstddef>
 #include <cassert>
+#include <cmath>
 
 // TODO: for 3/3
 // [x] Implement key exchange
@@ -117,7 +118,7 @@ namespace plexe {
         } else {
             // call srand only once
             std::call_once(flag, []() { srand(time(NULL)); });
-            std::uint32_t key = rand() % MAX_PRIVATE_KEY;
+            std::uint32_t key = rand() % MAX_PRIVATE_KEY + 1;
             // CryptoPP::AutoSeededRandomPool prng;
             // CryptoPP::Integer keyInt(prng, 32);
             // std::uint32_t key = keyInt.ConvertToLong();
@@ -127,11 +128,19 @@ namespace plexe {
 
     std::uint32_t CryptoHelper::computeSharedKey(std::uint32_t privateKey) {
         // return g^a mod p
-        return (PUBLIC_BASE ^ privateKey) % PUBLIC_MODULUS;
+        return power(PUBLIC_BASE, privateKey) % PUBLIC_MODULUS;
     }
 
     std::uint32_t CryptoHelper::computeSharedSecret(std::uint32_t privateKey, std::uint32_t sharedKey) {
         // return g^ab mod p
-        return (sharedKey ^ privateKey) % PUBLIC_MODULUS;
+        return power(sharedKey, privateKey) % PUBLIC_MODULUS;
+    }
+
+    std::uint32_t CryptoHelper::power(std::uint32_t base, std::uint32_t exp) {
+        std::uint32_t result = 1;
+        for (int i = 0; i < exp; i++) {
+            result *= base;
+        }
+        return result;
     }
 }

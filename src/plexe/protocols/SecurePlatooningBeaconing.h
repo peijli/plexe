@@ -24,8 +24,8 @@ namespace plexe {
     class SecurePlatooningBeaconing : public SimplePlatooningBeaconing {
     private:
         // TODO: write this key to the plexe TraCI vehicle interface
+        std::uint32_t fallbackKey;
         std::uint32_t symmetricKey;
-        std::uint32_t dummySharedSecret;
         std::uint32_t privateKey; // for Diffie-Hellman key exchange
         std::uint32_t publicKey; // for Diffie-Hellman key exchange
         SharedKeyStore sharedKeyStore; // for storing shared keys if the vehicle is a leader
@@ -47,7 +47,6 @@ namespace plexe {
         SecurePlatooningBeaconing();
         virtual ~SecurePlatooningBeaconing();
         virtual void initialize(int stage) override;
-        int getSymmetricKey() { return symmetricKey; }
     };
 } // namespace plexe
 

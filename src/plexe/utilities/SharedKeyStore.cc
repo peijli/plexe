@@ -11,6 +11,6 @@ namespace plexe {
         return sharedKeys[vehicleId];
     }
     void SharedKeyStore::setSharedKey(int vehicleId, std::uint32_t sharedKey) {
-        sharedKeys[vehicleId] = CryptoHelper::computeSharedSecret(privateLeaderKey, sharedKey);
+        sharedKeys[vehicleId] = sharedKey;
     }
 }

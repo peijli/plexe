@@ -39,6 +39,7 @@ void SecurePlatooningBeaconing::initialize(int stage)
         LOG << message.c_str() << endl;
         // initialize the shared key store
         sharedKeyStore = SharedKeyStore();
+        // TODO: implement platoon joining first before fixing the key exchange
         this->keyExchangeMsg = new cMessage("keyExchangeMsg");
         keyExchange(keyExchangeMsg);
         // scheduleAt(simTime() + 10, keyExchangeMsg);
@@ -63,7 +64,7 @@ void SecurePlatooningBeaconing::keyExchange(cMessage * msg) {
         KeyExchangeMessage* kxm = createKeyExchangeMessage(i);
         sendUnicast(kxm, i);
     }
-    scheduleAt(simTime() + 10, msg);
+    // scheduleAt(simTime() + 10, msg);
 }
 
 void SecurePlatooningBeaconing::sendUnicast(cPacket* msg, int destination) {

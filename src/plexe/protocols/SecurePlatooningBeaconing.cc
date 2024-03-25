@@ -149,8 +149,8 @@ PlatooningBeacon* SecurePlatooningBeaconing::decryptBeacon(const SecurePlatoonin
     int decryptedLength = secureBeacon->getEncryptedDataLength();
     std::string decrypted(decryptedChar, decryptedLength);
     // convert the JSON string to a map
-    getSimulation()->getEnvir()->alert(decrypted.c_str());
-    getSimulation()->getEnvir()->alert(decryptedChar);
+    std::string msg = "Decrypted: " + decrypted + " Sequence number: " + std::to_string(secureBeacon->getSequenceNumber());
+    getSimulation()->getEnvir()->alert(msg.c_str());
     std::map<std::string, std::string> map = JSONParser::parse(decrypted);
     // create a PlatooningBeacon object
     PlatooningBeacon* beacon = new PlatooningBeacon();

@@ -35,15 +35,24 @@ void SecurePlatooningBeaconing::initialize(int stage)
         LOG << message.c_str() << endl;
         // initialize the shared key store
         sharedKeyStore = SharedKeyStore();
-        auto platoonFormation = positionHelper->getPlatoonFormation();
-        for (auto i : platoonFormation) {
-            sharedKeyStore.setSharedKey(i, std::numeric_limits<std::uint32_t>::max());
+        cMessage *keyExchangeMsg = new cMessage("keyExchangeMsg");
+        for (int i = 0; i < 10; i++) {
+            scheduleAt(simTime() + 0.01 + 10 * i, keyExchangeMsg);
         }
-        // broadcast the key to all other vehicles
-        for (auto i : platoonFormation) {
-            KeyExchangeMessage* kxm = createKeyExchangeMessage(i);
-            sendUnicast(kxm, i);
-        }
+        // keyExchange();
+    }
+}
+
+void SecurePlatooningBeaconing::keyExchange() {
+    privateKey = CryptoHelper::generateSymmetricKey(true);
+    auto platoonFormation = positionHelper->getPlatoonFormation();
+    for (auto i : platoonFormation) {
+        sharedKeyStore.setSharedKey(i, std::numeric_limits<std::uint32_t>::max());
+    }
+    // broadcast the key to all other vehicles
+    for (auto i : platoonFormation) {
+        KeyExchangeMessage* kxm = createKeyExchangeMessage(i);
+        sendUnicast(kxm, i);
     }
 }
 
@@ -90,6 +99,12 @@ KeyExchangeMessage* SecurePlatooningBeaconing::createKeyExchangeMessage(int dest
 
 void SecurePlatooningBeaconing::handleSelfMsg(cMessage* msg)
 {
+    if (msg->isName("keyExchangeMsg")) {
+        // print vehicle id and time of key exchange
+        std::string message = "Vehicle " + std::to_string(positionHelper->getId()) + " is performing key exchange at time " + std::to_string(simTime().dbl());
+        getSimulation()->getEnvir()->alert(message.c_str());
+        keyExchange();
+    }
     SimplePlatooningBeaconing::handleSelfMsg(msg);
 }
 

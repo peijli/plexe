@@ -36,6 +36,7 @@ namespace plexe {
         KeyExchangeMessage* createKeyExchangeMessage(int destinationAddress, bool acknowledge=false);
         virtual void sendUnicast(cPacket* msg, int destination);
         void handleKeyExchangeMessage(KeyExchangeMessage* msg);
+        void keyExchange();
     protected:
         virtual void handleSelfMsg(cMessage* msg) override;
         virtual std::unique_ptr<BaseFrame1609_4> createBeacon(int destinationAddress) override;

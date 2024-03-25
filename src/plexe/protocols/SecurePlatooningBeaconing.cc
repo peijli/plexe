@@ -17,8 +17,8 @@ using namespace veins;
 // I think I have to overwrite a bunch of BaseApp methods...
 
 // TODO LIST
-// - [ ] Test encryption and decryption on sample payload. 
-// - [ ] Re-implement the encryption functionalities in this class
+// - [x] Test encryption and decryption on sample payload. 
+// - [x] Re-implement the encryption functionalities in this class
 // - [ ] Test this class again for performance
 // - [ ] Go through literature and see how OMNet++ handles network capabilities and different packet sizes
 
@@ -122,8 +122,7 @@ SecurePlatooningBeacon* SecurePlatooningBeaconing::encryptBeacon(const Platoonin
     // set the properties of the secure beacon
     // secureBeacon->setEncryptedData(encrypted);
     // Use the plaintext for testing
-    secureBeacon->setEncryptedData(json.c_str());
-    secureBeacon->setEncryptedDataLength(dataLength);
+    secureBeacon->setEncryptedData(json.c_str(), dataLength);
     secureBeacon->setAlgorithm("AES");
     secureBeacon->setKind(BEACON_TYPE);
     secureBeacon->setVehicleId(beacon->getVehicleId());
@@ -146,8 +145,12 @@ PlatooningBeacon* SecurePlatooningBeaconing::decryptBeacon(const SecurePlatoonin
     //     symmetricKey);
     // getSimulation()->getEnvir()->alert("SecurePlatooningBeaconing::decryptBeacon end");
     // getSimulation()->getEnvir()->alert(decryptedChar);
-    std::string decrypted(secureBeacon->getEncryptedData());
+    const char* decryptedChar = secureBeacon->getEncryptedData();
+    int decryptedLength = secureBeacon->getEncryptedDataLength();
+    std::string decrypted(decryptedChar, decryptedLength);
     // convert the JSON string to a map
+    getSimulation()->getEnvir()->alert(decrypted.c_str());
+    getSimulation()->getEnvir()->alert(decryptedChar);
     std::map<std::string, std::string> map = JSONParser::parse(decrypted);
     // create a PlatooningBeacon object
     PlatooningBeacon* beacon = new PlatooningBeacon();

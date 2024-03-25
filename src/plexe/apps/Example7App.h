@@ -4,21 +4,24 @@
 #include "plexe/messages/UpdatePlatoonFormation_m.h"
 #include "plexe/CC_Const.h"
 
-class Example7App : public plexe::BaseApp {
+namespace plexe{
+    class Example7App : public plexe::BaseApp {
 
-public:
-    void sendAbandonMessage();
-    virtual void sendUnicast(cPacket* msg, int destination);
+    public:
+        void sendAbandonMessage();
+        virtual void sendUnicast(cPacket* msg, int destination);
 
-protected:
-    virtual void initialize(int stage) override;
-    virtual void handleLowerMsg(cMessage* msg) override;
-    plexe::BaseScenario* scenario;
+    protected:
+        virtual void initialize(int stage) override;
+        virtual void handleLowerMsg(cMessage* msg) override;
+        plexe::BaseScenario* scenario;
 
-private:
-    AbandonPlatoon* createAbandonMessage();
-    UpdatePlatoonFormation* createUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation);
-    void handleAbandonMessage(AbandonPlatoon* msg);
-    void handleUpdatePlatoonFormationMessage(UpdatePlatoonFormation* msg);
-    void sendUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation);
-};
+    private:
+        AbandonPlatoon* createAbandonMessage();
+        UpdatePlatoonFormation* createUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation);
+        void handleAbandonMessage(AbandonPlatoon* msg);
+        void handleUpdatePlatoonFormationMessage(UpdatePlatoonFormation* msg);
+        void sendUpdatePlatoonFormationMessage(const std::vector<int>& newPlatoonFormation);
+    };
+}
+

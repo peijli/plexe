@@ -8,10 +8,12 @@
 #include "plexe/messages/PlexeInterfaceControlInfo_m.h"
 #include "plexe/driver/PlexeRadioDriverInterface.h"
 // #include "plexe/scenarios/BaseScenario.h"
-Define_Module(Example7App);
+
 
 using namespace veins;
 
+namespace plexe {
+Define_Module(Example7App);
 
 /**
  * Correctly initialize the application and bound it to the MAC layer
@@ -184,4 +186,8 @@ void Example7App::handleUpdatePlatoonFormationMessage(UpdatePlatoonFormation* ms
     getSimulation()->getActiveEnvir()->alert(text);
 
 }
+
+}
+
+
 

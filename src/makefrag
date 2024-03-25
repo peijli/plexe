@@ -23,10 +23,10 @@
 #
 
 # Add cryptopp libraries
-# EXTRA_OBJS += -lcryptopp 
-# EXTRA_OBJS += /usr/local/lib/libcryptopp.a
-# LIBS += -l/usr/local/lib/libcryptopp.a
-# INCLUDE_PATH += -I/usr/local/include/cryptopp
+# EXTRA_OBJS += -lopenssl
+EXTRA_OBJS += /usr/local/lib64/libssl.a 
+# LIBS += -l/usr/local/lib64/
+INCLUDE_PATH += -I/usr/local/include/
 #
 # on windows, special care is needed for linking
 # adapted from INET Framework (inet-4.2.1) makefrag

@@ -48,8 +48,20 @@ veins = Library(name="Veins", library="veins", default_path="../veins",
 #     version_script="print-cryptopp-version",
 # )
 
+# openssl = Library(
+#     name="OpenSSL",
+#     library="openssl",
+#     default_path="../openssl/",
+#     source_folder=".",
+#     lib_folder=".",
+#     images_folder=".",
+#     versions=["1.1.1"],
+#     version_script="print-openssl-version",
+# )
+
 libraries = LibraryChecker()
 libraries.add_lib(veins)
+# libraries.add_lib(openssl)
 # libraries.add_lib(cryptopp)
 
 # Start with default flags
